@@ -19,7 +19,7 @@ const TypewriterText = ({ text, delay = 0 }: { text: string; delay?: number }) =
         setDisplayText(text.slice(0, currentIndex + 1));
         setCurrentIndex(currentIndex + 1);
       }
-    }, delay + 50);
+    }, delay + 15); // Much faster typing speed
 
     return () => clearTimeout(timeout);
   }, [currentIndex, text, delay]);
@@ -176,9 +176,9 @@ const Auth = () => {
   };
 
   const LeftSide = () => (
-    <div className="relative flex flex-col justify-center items-center p-12 bg-gradient-to-br from-primary/10 to-accent/5">
-      <div className="absolute inset-0 bg-gradient-to-br from-background to-surface-dark opacity-95"></div>
-      <div className="relative z-10 max-w-lg text-center space-y-8">
+    <div className="w-full relative flex flex-col justify-center items-center p-12 bg-gradient-to-br from-primary/5 to-accent/5">
+      <div className="absolute inset-0 bg-gradient-to-br from-background/90 to-surface-dark/90"></div>
+      <div className="relative z-10 max-w-lg text-center space-y-6">
         {/* Logo and Brand */}
         <motion.div
           initial={{ opacity: 0, scale: 0.8 }}
@@ -203,17 +203,17 @@ const Auth = () => {
             className="space-y-4"
           >
             <h2 className="text-2xl font-semibold text-foreground">
-              <TypewriterText text="Transform Your Business" delay={1500} />
+              <TypewriterText text="Transform Your Business" delay={300} />
             </h2>
             <p className="text-lg text-muted-foreground">
-              <TypewriterText text="With Enterprise-Grade AI Automation" delay={3000} />
+              <TypewriterText text="With Enterprise-Grade AI Automation" delay={800} />
             </p>
           </motion.div>
 
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ delay: 5 }}
+            transition={{ delay: 1.2 }}
             className="space-y-4"
           >
             <div className="flex items-start gap-3">
@@ -244,7 +244,7 @@ const Auth = () => {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 6 }}
+          transition={{ delay: 1.5 }}
           className="space-y-4"
         >
           <div className="flex items-center justify-center gap-6 text-sm text-muted-foreground">
@@ -266,7 +266,7 @@ const Auth = () => {
   );
 
   return (
-    <div className="min-h-screen flex">
+    <div className="min-h-screen flex relative">
       {/* Neural background */}
       <div className="absolute inset-0 opacity-5">
         <div className="neural-grid"></div>
@@ -285,30 +285,30 @@ const Auth = () => {
       </div>
 
       {/* Left Side - Marketing Content */}
-      <div className="hidden lg:flex lg:w-1/2">
+      <div className="hidden lg:flex lg:w-1/2 relative">
         <LeftSide />
       </div>
 
-      {/* Divider */}
-      <div className="hidden lg:block w-px bg-gradient-to-b from-transparent via-primary/30 to-transparent"></div>
+      {/* Center Divider */}
+      <div className="hidden lg:block absolute left-1/2 top-0 bottom-0 w-px bg-gradient-to-b from-transparent via-primary/40 to-transparent transform -translate-x-1/2 z-20"></div>
 
       {/* Right Side - Auth Forms */}
-      <div className="w-full lg:w-1/2 flex items-center justify-center p-8 bg-background relative">
-        <div className="w-full max-w-md">
+      <div className="w-full lg:w-1/2 flex items-center justify-center p-8 bg-background/95 backdrop-blur-sm relative">
+        <div className="w-full max-w-md space-y-6">
           {/* Login/Signup Toggle */}
-          <div className="mb-8">
-            <div className="flex gap-4 mb-6">
+          <div className="space-y-1">
+            <div className="flex gap-3">
               <Button
                 variant={isLogin ? "default" : "outline"}
                 onClick={() => setIsLogin(true)}
-                className="flex-1 neural-button"
+                className="flex-1 neural-button text-sm"
               >
                 Sign In
               </Button>
               <Button
                 variant={!isLogin ? "default" : "outline"}
                 onClick={() => { setIsLogin(false); setCurrentStep(1); }}
-                className="flex-1 neural-button"
+                className="flex-1 neural-button text-sm"
               >
                 Start Free Trial
               </Button>
