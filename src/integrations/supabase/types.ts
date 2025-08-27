@@ -40,6 +40,7 @@ export type Database = {
           subscription_status: string | null
           trial_ends_at: string | null
           updated_at: string | null
+          user_id: string | null
         }
         Insert: {
           branding_config?: Json | null
@@ -66,6 +67,7 @@ export type Database = {
           subscription_status?: string | null
           trial_ends_at?: string | null
           updated_at?: string | null
+          user_id?: string | null
         }
         Update: {
           branding_config?: Json | null
@@ -92,6 +94,7 @@ export type Database = {
           subscription_status?: string | null
           trial_ends_at?: string | null
           updated_at?: string | null
+          user_id?: string | null
         }
         Relationships: []
       }
@@ -192,6 +195,138 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      orders: {
+        Row: {
+          business_id: string
+          created_at: string
+          customer_name: string | null
+          customer_phone: string | null
+          id: string
+          items: Json
+          notes: string | null
+          status: string
+          table_id: string | null
+          total_amount: number
+          updated_at: string
+        }
+        Insert: {
+          business_id: string
+          created_at?: string
+          customer_name?: string | null
+          customer_phone?: string | null
+          id?: string
+          items?: Json
+          notes?: string | null
+          status?: string
+          table_id?: string | null
+          total_amount?: number
+          updated_at?: string
+        }
+        Update: {
+          business_id?: string
+          created_at?: string
+          customer_name?: string | null
+          customer_phone?: string | null
+          id?: string
+          items?: Json
+          notes?: string | null
+          status?: string
+          table_id?: string | null
+          total_amount?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          created_at: string
+          email: string
+          id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          id?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      tables: {
+        Row: {
+          business_id: string
+          created_at: string
+          id: string
+          is_active: boolean
+          qr_code: string | null
+          seats: number
+          table_number: string
+          updated_at: string
+        }
+        Insert: {
+          business_id: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          qr_code?: string | null
+          seats?: number
+          table_number: string
+          updated_at?: string
+        }
+        Update: {
+          business_id?: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          qr_code?: string | null
+          seats?: number
+          table_number?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      working_hours: {
+        Row: {
+          business_id: string
+          close_time: string | null
+          created_at: string
+          day_of_week: string
+          id: string
+          is_open: boolean
+          open_time: string | null
+          updated_at: string
+        }
+        Insert: {
+          business_id: string
+          close_time?: string | null
+          created_at?: string
+          day_of_week: string
+          id?: string
+          is_open?: boolean
+          open_time?: string | null
+          updated_at?: string
+        }
+        Update: {
+          business_id?: string
+          close_time?: string | null
+          created_at?: string
+          day_of_week?: string
+          id?: string
+          is_open?: boolean
+          open_time?: string | null
+          updated_at?: string
+        }
+        Relationships: []
       }
     }
     Views: {
