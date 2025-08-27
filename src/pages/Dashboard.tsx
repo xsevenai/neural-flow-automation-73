@@ -35,66 +35,7 @@ const Dashboard = () => {
     { title: "Working Hours", url: "/dashboard/hours", icon: Clock, section: "hours", subtitle: "Open/close times, breaks, special days" }
   ];
 
-  const AppSidebar = () => {
-    const { state } = useSidebar();
-    const location = useLocation();
-    const currentPath = location.pathname;
-    const collapsed = state === "collapsed";
-
-    const isActive = (section: string) => activeSection === section;
-
-    return (
-      <Sidebar className={`${collapsed ? "w-14" : "w-80"} bg-slate-900 border-slate-700`} collapsible="icon">
-        <SidebarContent className="bg-slate-900">
-          <div className="p-4">
-            <h1 className="text-white text-xl font-semibold">naveen</h1>
-          </div>
-          
-          <SidebarGroup className="px-3">
-            <SidebarGroupContent>
-              <SidebarMenu>
-                {sidebarItems.map((item) => (
-                  <SidebarMenuItem key={item.title} className="mb-2">
-                    <SidebarMenuButton 
-                      asChild
-                      className={`w-full rounded-lg p-3 transition-all duration-200 ${
-                        isActive(item.section) 
-                          ? 'bg-slate-800 text-white border border-slate-600' 
-                          : 'text-slate-300 hover:bg-slate-800 hover:text-white'
-                      }`}
-                    >
-                      <div 
-                        className="flex items-start gap-3 cursor-pointer"
-                        onClick={() => setActiveSection(item.section)}
-                      >
-                        <item.icon className={`h-5 w-5 mt-0.5 ${
-                          item.section === 'dashboard' ? 'text-emerald-400' :
-                          item.section === 'chat' ? 'text-cyan-400' :
-                          item.section === 'menu' ? 'text-yellow-400' :
-                          item.section === 'menu-management' ? 'text-emerald-400' :
-                          item.section === 'table-management' ? 'text-blue-400' :
-                          item.section === 'qr' ? 'text-purple-400' :
-                          item.section === 'customers' ? 'text-teal-400' :
-                          item.section === 'files' ? 'text-green-400' :
-                          'text-yellow-400'
-                        }`} />
-                        {!collapsed && (
-                          <div className="flex-1 min-w-0">
-                            <div className="font-medium text-sm">{item.title}</div>
-                            <div className="text-xs text-slate-400 mt-1 leading-tight">{item.subtitle}</div>
-                          </div>
-                        )}
-                      </div>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                ))}
-              </SidebarMenu>
-            </SidebarGroupContent>
-          </SidebarGroup>
-        </SidebarContent>
-      </Sidebar>
-    );
-  };
+  const isActive = (section: string) => activeSection === section;
 
   const DashboardContent = () => {
     switch (activeSection) {
@@ -107,7 +48,7 @@ const Dashboard = () => {
               <p className="text-slate-300 text-sm mb-6">Times are in 24h format</p>
             </div>
 
-            <Card className="bg-slate-800 border-slate-700">
+            <Card className="bg-slate-700 border-slate-600">
               <CardContent className="p-6">
                 <div className="space-y-4">
                   {Object.entries(workingHours).map(([day, hours]) => (
@@ -138,7 +79,7 @@ const Dashboard = () => {
                           type="time"
                           value={hours.open ? hours.start : ''}
                           disabled={!hours.open}
-                          className="w-24 bg-slate-700 border-slate-600 text-white"
+                          className="w-24 bg-slate-600 border-slate-500 text-white"
                           onChange={(e) => {
                             setWorkingHours(prev => ({
                               ...prev,
@@ -151,7 +92,7 @@ const Dashboard = () => {
                           type="time"
                           value={hours.open ? hours.end : ''}
                           disabled={!hours.open}
-                          className="w-24 bg-slate-700 border-slate-600 text-white"
+                          className="w-24 bg-slate-600 border-slate-500 text-white"
                           onChange={(e) => {
                             setWorkingHours(prev => ({
                               ...prev,
@@ -163,8 +104,8 @@ const Dashboard = () => {
                     </div>
                   ))}
                 </div>
-                <div className="flex gap-3 mt-6 pt-4 border-t border-slate-700">
-                  <Button variant="outline" className="bg-slate-700 border-slate-600 text-white hover:bg-slate-600">
+                <div className="flex gap-3 mt-6 pt-4 border-t border-slate-600">
+                  <Button variant="outline" className="bg-slate-600 border-slate-500 text-white hover:bg-slate-500">
                     Reset
                   </Button>
                   <Button className="bg-emerald-600 hover:bg-emerald-700 text-white">
@@ -184,17 +125,17 @@ const Dashboard = () => {
               <p className="text-slate-400 mb-6">Visualize table occupancy and manage reservations</p>
             </div>
 
-            <Card className="bg-slate-800 border-slate-700">
+            <Card className="bg-slate-700 border-slate-600">
               <CardContent className="p-6">
                 <div className="grid grid-cols-6 gap-4 mb-6">
                   {Array.from({ length: 12 }, (_, i) => (
-                    <div key={i} className="bg-slate-700 rounded-lg p-4 text-center border border-slate-600">
+                    <div key={i} className="bg-slate-600 rounded-lg p-4 text-center border border-slate-500">
                       <div className="text-white font-medium mb-1">T{i + 1}</div>
                       <div className="text-emerald-400 text-sm">available</div>
                     </div>
                   ))}
                 </div>
-                <Button className="bg-slate-700 border border-slate-600 text-white hover:bg-slate-600">
+                <Button className="bg-slate-600 border border-slate-500 text-white hover:bg-slate-500">
                   🔗 Generate Table QR
                 </Button>
               </CardContent>
@@ -210,9 +151,9 @@ const Dashboard = () => {
               <p className="text-slate-400 mb-6">Browse by category and manage pricing, availability</p>
             </div>
 
-            <Card className="bg-slate-800 border-slate-700">
+            <Card className="bg-slate-700 border-slate-600">
               <CardContent className="p-6">
-                <Button className="bg-slate-700 border border-slate-600 text-white hover:bg-slate-600 mb-4">
+                <Button className="bg-slate-600 border border-slate-500 text-white hover:bg-slate-500 mb-4">
                   + Add Category
                 </Button>
                 <div className="text-slate-300">No categories added yet. Click "Add Category" to get started.</div>
@@ -229,18 +170,18 @@ const Dashboard = () => {
               <p className="text-slate-400 mb-6">Business Owners Chatting</p>
             </div>
 
-            <Card className="bg-slate-800 border-slate-700 h-96">
+            <Card className="bg-slate-700 border-slate-600 h-96">
               <CardContent className="p-0 h-full flex flex-col">
                 <div className="flex-1 p-6">
                   <div className="text-slate-300 text-center">Start a conversation with your AI assistant</div>
                 </div>
-                <div className="p-4 border-t border-slate-700">
+                <div className="p-4 border-t border-slate-600">
                   <div className="flex gap-2">
                     <Textarea
                       placeholder="Type a message"
                       value={chatMessage}
                       onChange={(e) => setChatMessage(e.target.value)}
-                      className="bg-slate-700 border-slate-600 text-white resize-none"
+                      className="bg-slate-600 border-slate-500 text-white resize-none"
                       rows={1}
                     />
                     <Button 
@@ -265,7 +206,7 @@ const Dashboard = () => {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              <Card className="bg-slate-800 border-slate-700">
+              <Card className="bg-slate-700 border-slate-600">
                 <CardHeader>
                   <CardTitle className="text-white flex items-center gap-2">
                     <ShoppingCart className="h-5 w-5 text-emerald-400" />
@@ -278,7 +219,7 @@ const Dashboard = () => {
                 </CardContent>
               </Card>
 
-              <Card className="bg-slate-800 border-slate-700">
+              <Card className="bg-slate-700 border-slate-600">
                 <CardHeader>
                   <CardTitle className="text-white flex items-center gap-2">
                     <Users className="h-5 w-5 text-blue-400" />
@@ -291,7 +232,7 @@ const Dashboard = () => {
                 </CardContent>
               </Card>
 
-              <Card className="bg-slate-800 border-slate-700">
+              <Card className="bg-slate-700 border-slate-600">
                 <CardHeader>
                   <CardTitle className="text-white flex items-center gap-2">
                     <MessageCircle className="h-5 w-5 text-yellow-400" />
@@ -311,116 +252,163 @@ const Dashboard = () => {
 
   return (
     <SidebarProvider>
-      <div className="min-h-screen w-full bg-slate-900 flex">
-        <AppSidebar />
-        
-        <div className="flex-1 flex flex-col">
-          {/* Top Header */}
-          <header className="bg-slate-900 border-b border-slate-700 p-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-4">
-                <SidebarTrigger className="text-white" />
-                <div className="flex items-center gap-2">
-                  <div className="w-2 h-2 bg-emerald-400 rounded-full"></div>
-                  <span className="text-white font-medium capitalize">{activeSection.replace('-', ' ')}</span>
-                </div>
+      <div className="min-h-screen w-full bg-slate-900 p-4">
+        <div className="grid grid-cols-12 gap-4 h-screen">
+          
+          {/* Left Panel - Navigation */}
+          <div className="col-span-3">
+            <div className="bg-slate-800 rounded-xl border border-slate-700 h-full overflow-hidden">
+              <div className="p-4 border-b border-slate-700">
+                <h1 className="text-white text-xl font-semibold">naveen</h1>
               </div>
               
-              <div className="flex items-center gap-4">
-                <Button variant="ghost" size="icon" className="text-slate-300 hover:text-white">
-                  <BarChart3 className="h-5 w-5" />
-                </Button>
-                <Button variant="ghost" className="text-slate-300 hover:text-white">
-                  <Share2 className="h-4 w-4 mr-2" />
-                  Analytics
-                </Button>
-                <Button variant="ghost" className="text-slate-300 hover:text-white">
-                  <Share2 className="h-4 w-4 mr-2" />
-                  Share
-                </Button>
-                <Button variant="ghost" size="icon" className="text-slate-300 hover:text-white">
-                  <Settings className="h-5 w-5" />
-                </Button>
-                <div className="w-8 h-8 bg-slate-700 rounded-full flex items-center justify-center">
-                  <span className="text-white text-sm font-medium">N</span>
+              <div className="p-3 h-full overflow-y-auto">
+                <div className="space-y-2">
+                  {sidebarItems.map((item) => (
+                    <div key={item.title} className="mb-2">
+                      <div 
+                        className={`w-full rounded-lg p-3 transition-all duration-200 cursor-pointer ${
+                          isActive(item.section) 
+                            ? 'bg-slate-700 text-white border border-slate-600' 
+                            : 'text-slate-300 hover:bg-slate-700 hover:text-white'
+                        }`}
+                        onClick={() => setActiveSection(item.section)}
+                      >
+                        <div className="flex items-start gap-3">
+                          <item.icon className={`h-5 w-5 mt-0.5 ${
+                            item.section === 'dashboard' ? 'text-emerald-400' :
+                            item.section === 'chat' ? 'text-cyan-400' :
+                            item.section === 'menu' ? 'text-yellow-400' :
+                            item.section === 'menu-management' ? 'text-emerald-400' :
+                            item.section === 'table-management' ? 'text-blue-400' :
+                            item.section === 'qr' ? 'text-purple-400' :
+                            item.section === 'customers' ? 'text-teal-400' :
+                            item.section === 'files' ? 'text-green-400' :
+                            'text-yellow-400'
+                          }`} />
+                          <div className="flex-1 min-w-0">
+                            <div className="font-medium text-sm">{item.title}</div>
+                            <div className="text-xs text-slate-400 mt-1 leading-tight">{item.subtitle}</div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </div>
             </div>
-          </header>
+          </div>
 
-          <div className="flex-1 flex">
-            {/* Main Content */}
-            <main className="flex-1 p-6 overflow-auto">
-              <DashboardContent />
-            </main>
-
-            {/* Right Sidebar */}
-            <aside className="w-80 bg-slate-900 border-l border-slate-700 p-6">
-              <div className="space-y-6">
+          {/* Center Panel - Main Content */}
+          <div className="col-span-6">
+            <div className="bg-slate-800 rounded-xl border border-slate-700 h-full overflow-hidden flex flex-col">
+              {/* Top Header */}
+              <div className="bg-slate-800 border-b border-slate-700 p-4">
                 <div className="flex items-center justify-between">
-                  <h2 className="text-white font-medium">Live</h2>
-                  <div className="flex gap-2">
+                  <div className="flex items-center gap-2">
+                    <div className="w-2 h-2 bg-emerald-400 rounded-full"></div>
+                    <span className="text-white font-medium capitalize">{activeSection.replace('-', ' ')}</span>
+                  </div>
+                  
+                  <div className="flex items-center gap-4">
                     <Button variant="ghost" size="icon" className="text-slate-300 hover:text-white">
-                      <LayoutGrid className="h-4 w-4" />
+                      <BarChart3 className="h-5 w-5" />
                     </Button>
+                    <Button variant="ghost" className="text-slate-300 hover:text-white">
+                      <Share2 className="h-4 w-4 mr-2" />
+                      Analytics
+                    </Button>
+                    <Button variant="ghost" className="text-slate-300 hover:text-white">
+                      <Share2 className="h-4 w-4 mr-2" />
+                      Share
+                    </Button>
+                    <Button variant="ghost" size="icon" className="text-slate-300 hover:text-white">
+                      <Settings className="h-5 w-5" />
+                    </Button>
+                    <div className="w-8 h-8 bg-slate-700 rounded-full flex items-center justify-center">
+                      <span className="text-white text-sm font-medium">N</span>
+                    </div>
                   </div>
                 </div>
+              </div>
 
-                <div className="space-y-4">
-                  <Button className="w-full bg-slate-800 border border-slate-600 text-white hover:bg-slate-700 justify-start">
-                    <ShoppingCart className="h-4 w-4 mr-2" />
-                    Live Orders
-                  </Button>
-                  <Button className="w-full bg-slate-800 border border-slate-600 text-white hover:bg-slate-700 justify-start">
-                    <MessageCircle className="h-4 w-4 mr-2" />
-                    Live Chat
-                  </Button>
-                  <Button className="w-full bg-slate-800 border border-slate-600 text-white hover:bg-slate-700 justify-start">
-                    <MapPin className="h-4 w-4 mr-2" />
-                    Live Reservation
-                  </Button>
-                  <Button className="w-full bg-slate-800 border border-slate-600 text-white hover:bg-slate-700 justify-start">
-                    <FileText className="h-4 w-4 mr-2" />
-                    Reports
-                  </Button>
-                </div>
+              {/* Main Content Area */}
+              <div className="flex-1 p-6 overflow-auto">
+                <DashboardContent />
+              </div>
+            </div>
+          </div>
 
-                <div className="border-t border-slate-700 pt-6">
-                  <h3 className="text-white font-medium mb-4">Notification</h3>
-                  <div className="space-y-3">
-                    <div className="bg-slate-800 rounded-lg p-3">
-                      <div className="flex items-start gap-2">
-                        <Bell className="h-4 w-4 text-emerald-400 mt-0.5" />
-                        <div>
-                          <p className="text-white text-sm font-medium">New online order received</p>
-                          <p className="text-slate-400 text-xs">2 min ago • Order #1024</p>
+          {/* Right Panel - Live & Notifications */}
+          <div className="col-span-3">
+            <div className="bg-slate-800 rounded-xl border border-slate-700 h-full overflow-hidden">
+              <div className="p-6 h-full overflow-y-auto">
+                <div className="space-y-6">
+                  <div className="flex items-center justify-between">
+                    <h2 className="text-white font-medium">Live</h2>
+                    <div className="flex gap-2">
+                      <Button variant="ghost" size="icon" className="text-slate-300 hover:text-white">
+                        <LayoutGrid className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+
+                  <div className="space-y-4">
+                    <Button className="w-full bg-slate-700 border border-slate-600 text-white hover:bg-slate-600 justify-start">
+                      <ShoppingCart className="h-4 w-4 mr-2" />
+                      Live Orders
+                    </Button>
+                    <Button className="w-full bg-slate-700 border border-slate-600 text-white hover:bg-slate-600 justify-start">
+                      <MessageCircle className="h-4 w-4 mr-2" />
+                      Live Chat
+                    </Button>
+                    <Button className="w-full bg-slate-700 border border-slate-600 text-white hover:bg-slate-600 justify-start">
+                      <MapPin className="h-4 w-4 mr-2" />
+                      Live Reservation
+                    </Button>
+                    <Button className="w-full bg-slate-700 border border-slate-600 text-white hover:bg-slate-600 justify-start">
+                      <FileText className="h-4 w-4 mr-2" />
+                      Reports
+                    </Button>
+                  </div>
+
+                  <div className="border-t border-slate-700 pt-6">
+                    <h3 className="text-white font-medium mb-4">Notification</h3>
+                    <div className="space-y-3">
+                      <div className="bg-slate-700 rounded-lg p-3">
+                        <div className="flex items-start gap-2">
+                          <Bell className="h-4 w-4 text-emerald-400 mt-0.5" />
+                          <div>
+                            <p className="text-white text-sm font-medium">New online order received</p>
+                            <p className="text-slate-400 text-xs">2 min ago • Order #1024</p>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                    
-                    <div className="bg-slate-800 rounded-lg p-3">
-                      <div className="flex items-start gap-2">
-                        <Calendar className="h-4 w-4 text-yellow-400 mt-0.5" />
-                        <div>
-                          <p className="text-white text-sm font-medium">Reservation starting soon</p>
-                          <p className="text-slate-400 text-xs">Today 18:30 • Party of 4</p>
+                      
+                      <div className="bg-slate-700 rounded-lg p-3">
+                        <div className="flex items-start gap-2">
+                          <Calendar className="h-4 w-4 text-yellow-400 mt-0.5" />
+                          <div>
+                            <p className="text-white text-sm font-medium">Reservation starting soon</p>
+                            <p className="text-slate-400 text-xs">Today 18:30 • Party of 4</p>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                    
-                    <div className="bg-slate-800 rounded-lg p-3">
-                      <div className="flex items-start gap-2">
-                        <User className="h-4 w-4 text-orange-400 mt-0.5" />
-                        <div>
-                          <p className="text-white text-sm font-medium">Low stock: Fresh basil</p>
-                          <p className="text-slate-400 text-xs">Reorder suggested</p>
+                      
+                      <div className="bg-slate-700 rounded-lg p-3">
+                        <div className="flex items-start gap-2">
+                          <User className="h-4 w-4 text-orange-400 mt-0.5" />
+                          <div>
+                            <p className="text-white text-sm font-medium">Low stock: Fresh basil</p>
+                            <p className="text-slate-400 text-xs">Reorder suggested</p>
+                          </div>
                         </div>
                       </div>
                     </div>
                   </div>
                 </div>
               </div>
-            </aside>
+            </div>
           </div>
         </div>
       </div>
