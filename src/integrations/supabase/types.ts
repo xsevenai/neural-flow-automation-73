@@ -14,60 +14,7 @@ export type Database = {
   }
   public: {
     Tables: {
-      business_profiles: {
-        Row: {
-          business_address: string
-          business_category: string
-          business_city: string
-          business_country: string
-          business_email: string
-          business_name: string
-          business_phone: string | null
-          business_state: string
-          business_website: string | null
-          company_size: string | null
-          created_at: string
-          id: string
-          industry_type: string | null
-          updated_at: string
-          user_id: string
-        }
-        Insert: {
-          business_address: string
-          business_category: string
-          business_city: string
-          business_country: string
-          business_email: string
-          business_name: string
-          business_phone?: string | null
-          business_state: string
-          business_website?: string | null
-          company_size?: string | null
-          created_at?: string
-          id?: string
-          industry_type?: string | null
-          updated_at?: string
-          user_id: string
-        }
-        Update: {
-          business_address?: string
-          business_category?: string
-          business_city?: string
-          business_country?: string
-          business_email?: string
-          business_name?: string
-          business_phone?: string | null
-          business_state?: string
-          business_website?: string | null
-          company_size?: string | null
-          created_at?: string
-          id?: string
-          industry_type?: string | null
-          updated_at?: string
-          user_id?: string
-        }
-        Relationships: []
-      }
+      [_ in never]: never
     }
     Views: {
       [_ in never]: never
