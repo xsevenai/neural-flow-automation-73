@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { ArrowLeft, ArrowRight, Check, Building2, User, Mail, Lock, Phone, Shield, Zap, Bot, TrendingUp, Star, Crown } from "lucide-react";
+import { ArrowLeft, ArrowRight, Building2, Mail, Lock, Phone, Eye, EyeOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -8,6 +8,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
+import { supabase } from '@/integrations/supabase/client';
+import type { Session, User as SupabaseUser } from '@supabase/supabase-js';
 
 const NeuralBrainAnimation = () => {
   const [mounted, setMounted] = useState(false);
@@ -195,6 +197,7 @@ const Auth = () => {
   const [currentStep, setCurrentStep] = useState(1);
   const [isLogin, setIsLogin] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -204,21 +207,34 @@ const Auth = () => {
   
   // Business onboarding states
   const [businessName, setBusinessName] = useState("");
-  const [businessSlug, setBusinessSlug] = useState("");
-  const [businessCategory, setBusinessCategory] = useState("");
+  const [businessType, setBusinessType] = useState("");
   const [businessEmail, setBusinessEmail] = useState("");
+  const [businessPhone, setBusinessPhone] = useState("");
   const [businessAddress, setBusinessAddress] = useState("");
-  const [businessLocation, setBusinessLocation] = useState("");
-  const [googleBusinessLink, setGoogleBusinessLink] = useState("");
+  const [businessCity, setBusinessCity] = useState("");
+  const [businessState, setBusinessState] = useState("");
+  const [businessCountry, setBusinessCountry] = useState("US");
   const [ownerName, setOwnerName] = useState("");
   const [ownerEmail, setOwnerEmail] = useState("");
   const [ownerPassword, setOwnerPassword] = useState("");
-  const [ownerPhone, setOwnerPhone] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [agreeTerms, setAgreeTerms] = useState(false);
-  const [agreePrivacy, setAgreePrivacy] = useState(false);
 
-  const [slugAvailable, setSlugAvailable] = useState<boolean | null>(null);
-  const [emailAvailable, setEmailAvailable] = useState<boolean | null>(null);
+  // Check if user is already authenticated
+  useEffect(() => {
+    checkExistingSession();
+    
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        if (event === 'SIGNED_IN' && session) {
+          await handleAuthSuccess(session.user);
+        }
+      }
+    );
+
+    return () => subscription.unsubscribe();
+  }, []);
 
   // Check URL hash for login or signup
   useEffect(() => {
@@ -230,30 +246,54 @@ const Auth = () => {
     }
   }, []);
 
-  const businessCategories = [
-    { value: "food-hospitality", label: "Food & Hospitality", icon: "🍽️", description: "Restaurants, cafes, catering services" },
-    { value: "beauty-personal-care", label: "Beauty & Personal Care", icon: "💅", description: "Salons, spas, wellness centers" },
-    { value: "automotive-services", label: "Automotive Services", icon: "🚗", description: "Auto repair, car washes, dealerships" },
-    { value: "health-medical", label: "Health & Medical", icon: "🏥", description: "Clinics, dental offices, medical practices" },
-    { value: "local-services", label: "Local Services", icon: "🔧", description: "Home services, consulting, professional services" },
-  ];
-
-  const handleSlugChange = (value: string) => {
-    const slug = value.toLowerCase().replace(/[^a-z0-9-]/g, '-').replace(/-+/g, '-');
-    setBusinessSlug(slug);
-    setTimeout(() => {
-      setSlugAvailable(Math.random() > 0.3);
-    }, 500);
-  };
-
-  const handleEmailChange = (value: string) => {
-    setOwnerEmail(value);
-    if (value.includes('@')) {
-      setTimeout(() => {
-        setEmailAvailable(Math.random() > 0.2);
-      }, 500);
+  const checkExistingSession = async () => {
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        await handleAuthSuccess(session.user);
+      }
+    } catch (error) {
+      console.error('Error checking session:', error);
     }
   };
+
+  const handleAuthSuccess = async (user: SupabaseUser) => {
+    try {
+      // Check if business profile exists
+      const { data: profile } = await supabase
+        .from('business_profiles')
+        .select('*')
+        .eq('user_id', user.id)
+        .maybeSingle();
+
+      if (profile) {
+        // User has business profile, redirect to dashboard
+        navigate('/dashboard');
+      } else if (isLogin) {
+        // Logged in but no business profile, show error
+        toast({
+          title: "Account Setup Required",
+          description: "Please complete your business setup first.",
+          variant: "destructive",
+        });
+        setIsLogin(false);
+        setCurrentStep(1);
+      }
+      // If signing up, continue with business profile creation
+    } catch (error) {
+      console.error('Error checking business profile:', error);
+    }
+  };
+
+  const businessTypes = [
+    { value: "Restaurant", label: "Restaurant" },
+    { value: "Cafe", label: "Cafe" },
+    { value: "Bar", label: "Bar" },
+    { value: "Fast Food", label: "Fast Food" },
+    { value: "Food Truck", label: "Food Truck" },
+    { value: "Catering", label: "Catering" },
+    { value: "Other", label: "Other" }
+  ];
 
   const validatePassword = (password: string) => {
     return password.length >= 8 && /(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(password);
@@ -261,6 +301,7 @@ const Auth = () => {
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+    
     if (!loginEmail || !loginPassword) {
       toast({
         title: "Error",
@@ -271,19 +312,38 @@ const Auth = () => {
     }
 
     setLoading(true);
-    setTimeout(() => {
+    
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: loginEmail,
+        password: loginPassword,
+      });
+
+      if (error) {
+        throw error;
+      }
+
       toast({
         title: "Welcome back!",
         description: "Successfully signed in",
       });
+      
+      // handleAuthSuccess will be called by the auth state change listener
+    } catch (error: any) {
+      console.error('Login error:', error);
+      toast({
+        title: "Login Failed",
+        description: error.message || "Invalid email or password",
+        variant: "destructive",
+      });
+    } finally {
       setLoading(false);
-      navigate('/dashboard');
-    }, 1000);
+    }
   };
 
   const handleNextStep = () => {
     if (currentStep === 1) {
-      if (!businessName || !businessSlug || !businessCategory || !businessEmail) {
+      if (!businessName || !businessType || !businessEmail) {
         toast({
           title: "Error",
           description: "Please fill in all required business information fields",
@@ -298,7 +358,7 @@ const Auth = () => {
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!businessName || !businessSlug || !businessCategory || !businessEmail || !ownerName || !ownerEmail || !ownerPassword) {
+    if (!businessName || !businessType || !businessEmail || !ownerName || !ownerEmail || !ownerPassword) {
       toast({
         title: "Error",
         description: "Please fill in all required fields",
@@ -316,24 +376,115 @@ const Auth = () => {
       return;
     }
 
-    if (!agreeTerms || !agreePrivacy) {
+    if (ownerPassword !== confirmPassword) {
+      toast({
+        title: "Password Error",
+        description: "Passwords do not match",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!agreeTerms) {
       toast({
         title: "Agreement Required",
-        description: "Please accept the terms of service and privacy policy",
+        description: "Please accept the terms of service",
         variant: "destructive",
       });
       return;
     }
 
     setLoading(true);
-    setTimeout(() => {
+    
+    try {
+      // Create auth user
+      const { data: authData, error: authError } = await supabase.auth.signUp({
+        email: ownerEmail,
+        password: ownerPassword,
+        options: {
+          emailRedirectTo: `${window.location.origin}/dashboard`
+        }
+      });
+
+      if (authError) {
+        throw authError;
+      }
+
+      if (!authData.user) {
+        throw new Error('User creation failed');
+      }
+
+      // Create business profile
+      const { error: profileError } = await supabase
+        .from('business_profiles')
+        .insert({
+          user_id: authData.user.id,
+          business_name: businessName,
+          business_type: businessType,
+          business_email: businessEmail,
+          business_phone: businessPhone || null,
+          business_address: businessAddress || null,
+          business_city: businessCity || null,
+          business_state: businessState || null,
+          business_country: businessCountry
+        });
+
+      if (profileError) {
+        throw profileError;
+      }
+
+      // Create default working hours
+      const defaultHours = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'].map(day => ({
+        business_id: null, // Will be set by the trigger
+        day_of_week: day,
+        is_open: day !== 'sun' && day !== 'sat',
+        open_time: day !== 'sun' && day !== 'sat' ? '09:00' : null,
+        close_time: day !== 'sun' && day !== 'sat' ? '17:00' : null
+      }));
+
+      // Get the created business profile to get the ID
+      const { data: businessProfile } = await supabase
+        .from('business_profiles')
+        .select('id')
+        .eq('user_id', authData.user.id)
+        .single();
+
+      if (businessProfile) {
+        await supabase
+          .from('working_hours')
+          .insert(
+            defaultHours.map(hour => ({
+              ...hour,
+              business_id: businessProfile.id
+            }))
+          );
+      }
+
       toast({
         title: "Account Created!",
-        description: "Welcome to X-SevenAI! Choose your plan to continue.",
+        description: "Welcome to X-SevenAI! Please check your email to verify your account.",
       });
+
+      // If email confirmation is disabled, redirect immediately
+      if (authData.session) {
+        navigate('/dashboard');
+      } else {
+        toast({
+          title: "Email Verification Required",
+          description: "Please check your email and click the verification link to complete setup.",
+        });
+      }
+      
+    } catch (error: any) {
+      console.error('Signup error:', error);
+      toast({
+        title: "Registration Failed",
+        description: error.message || "Failed to create account. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
       setLoading(false);
-      navigate('/subscription-plans');
-    }, 2000);
+    }
   };
 
   const LeftSide = () => (
@@ -417,7 +568,7 @@ const Auth = () => {
                 onClick={() => { setIsLogin(false); setCurrentStep(1); }}
                 className="flex-1 neural-button text-sm"
               >
-                Start Free Trial
+                Create Account
               </Button>
             </div>
           </div>
@@ -450,15 +601,26 @@ const Auth = () => {
                   </div>
                   <div>
                     <Label htmlFor="login-password">Password</Label>
-                    <Input
-                      id="login-password"
-                      type="password"
-                      value={loginPassword}
-                      onChange={(e) => setLoginPassword(e.target.value)}
-                      placeholder="••••••••"
-                      className="neural-input"
-                      required
-                    />
+                    <div className="relative">
+                      <Input
+                        id="login-password"
+                        type={showPassword ? "text" : "password"}
+                        value={loginPassword}
+                        onChange={(e) => setLoginPassword(e.target.value)}
+                        placeholder="••••••••"
+                        className="neural-input pr-10"
+                        required
+                      />
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        className="absolute right-0 top-0 h-full px-3 text-muted-foreground hover:text-foreground"
+                        onClick={() => setShowPassword(!showPassword)}
+                      >
+                        {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                      </Button>
+                    </div>
                   </div>
                   <Button
                     type="submit"
@@ -480,110 +642,112 @@ const Auth = () => {
               {currentStep === 1 && (
                 <div className="space-y-6">
                   <div className="text-center space-y-2">
-                    <h2 className="text-2xl font-bold neural-heading">Get Started</h2>
+                    <h2 className="text-2xl font-bold neural-heading">Business Information</h2>
                     <p className="text-muted-foreground">Tell us about your business</p>
                   </div>
 
                   <div className="space-y-4">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div>
-                        <Label htmlFor="business-name">Business Name *</Label>
-                        <Input
-                          id="business-name"
-                          value={businessName}
-                          onChange={(e) => setBusinessName(e.target.value)}
-                          placeholder="Your Company Inc."
-                          className="neural-input"
-                          required
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor="business-email">Business Email *</Label>
-                        <Input
-                          id="business-email"
-                          type="email"
-                          value={businessEmail}
-                          onChange={(e) => setBusinessEmail(e.target.value)}
-                          placeholder="contact@company.com"
-                          className="neural-input"
-                          required
-                        />
-                      </div>
-                    </div>
-
                     <div>
-                      <Label htmlFor="business-slug" className="flex items-center justify-between">
-                        Business URL *
-                        {slugAvailable !== null && (
-                          <span className={`text-xs ${slugAvailable ? 'text-green-500' : 'text-red-500'}`}>
-                            {slugAvailable ? '✓ Available' : '✗ Taken'}
-                          </span>
-                        )}
-                      </Label>
+                      <Label htmlFor="business-name">Business Name *</Label>
                       <Input
-                        id="business-slug"
-                        value={businessSlug}
-                        onChange={(e) => handleSlugChange(e.target.value)}
-                        placeholder="your-business-name"
+                        id="business-name"
+                        value={businessName}
+                        onChange={(e) => setBusinessName(e.target.value)}
+                        placeholder="Your Restaurant Name"
                         className="neural-input"
                         required
                       />
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div>
-                        <Label htmlFor="business-address">Business Address</Label>
-                        <Input
-                          id="business-address"
-                          value={businessAddress}
-                          onChange={(e) => setBusinessAddress(e.target.value)}
-                          placeholder="123 Business St, City, State"
-                          className="neural-input"
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor="business-location">Location/City</Label>
-                        <Input
-                          id="business-location"
-                          value={businessLocation}
-                          onChange={(e) => setBusinessLocation(e.target.value)}
-                          placeholder="New York, NY"
-                          className="neural-input"
-                        />
-                      </div>
-                    </div>
-
                     <div>
-                      <Label htmlFor="google-business">Google My Business Link</Label>
-                      <Input
-                        id="google-business"
-                        value={googleBusinessLink}
-                        onChange={(e) => setGoogleBusinessLink(e.target.value)}
-                        placeholder="https://goo.gl/maps/..."
-                        className="neural-input"
-                      />
-                    </div>
-
-                    <div>
-                      <Label htmlFor="business-category">Business Category *</Label>
-                      <Select value={businessCategory} onValueChange={setBusinessCategory}>
+                      <Label htmlFor="business-type">Business Type *</Label>
+                      <Select value={businessType} onValueChange={setBusinessType}>
                         <SelectTrigger className="neural-input bg-background border border-input">
-                          <SelectValue placeholder="Select your business category" />
+                          <SelectValue placeholder="Select your business type" />
                         </SelectTrigger>
                         <SelectContent className="bg-background border border-input z-50">
-                          {businessCategories.map((category) => (
-                            <SelectItem key={category.value} value={category.value} className="bg-background hover:bg-accent/10">
-                              <div className="flex items-center gap-3">
-                                <span>{category.icon}</span>
-                                <div>
-                                  <div className="font-medium">{category.label}</div>
-                                  <div className="text-xs text-muted-foreground">{category.description}</div>
-                                </div>
-                              </div>
+                          {businessTypes.map((type) => (
+                            <SelectItem key={type.value} value={type.value} className="bg-background hover:bg-accent/10">
+                              {type.label}
                             </SelectItem>
                           ))}
                         </SelectContent>
                       </Select>
+                    </div>
+
+                    <div>
+                      <Label htmlFor="business-email">Business Email *</Label>
+                      <Input
+                        id="business-email"
+                        type="email"
+                        value={businessEmail}
+                        onChange={(e) => setBusinessEmail(e.target.value)}
+                        placeholder="contact@yourrestaurant.com"
+                        className="neural-input"
+                        required
+                      />
+                    </div>
+
+                    <div>
+                      <Label htmlFor="business-phone">Business Phone</Label>
+                      <Input
+                        id="business-phone"
+                        type="tel"
+                        value={businessPhone}
+                        onChange={(e) => setBusinessPhone(e.target.value)}
+                        placeholder="+1 (555) 123-4567"
+                        className="neural-input"
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <Label htmlFor="business-address">Address</Label>
+                        <Input
+                          id="business-address"
+                          value={businessAddress}
+                          onChange={(e) => setBusinessAddress(e.target.value)}
+                          placeholder="123 Main St"
+                          className="neural-input"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="business-city">City</Label>
+                        <Input
+                          id="business-city"
+                          value={businessCity}
+                          onChange={(e) => setBusinessCity(e.target.value)}
+                          placeholder="New York"
+                          className="neural-input"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <Label htmlFor="business-state">State</Label>
+                        <Input
+                          id="business-state"
+                          value={businessState}
+                          onChange={(e) => setBusinessState(e.target.value)}
+                          placeholder="NY"
+                          className="neural-input"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="business-country">Country</Label>
+                        <Select value={businessCountry} onValueChange={setBusinessCountry}>
+                          <SelectTrigger className="neural-input bg-background border border-input">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent className="bg-background border border-input z-50">
+                            <SelectItem value="US">United States</SelectItem>
+                            <SelectItem value="CA">Canada</SelectItem>
+                            <SelectItem value="UK">United Kingdom</SelectItem>
+                            <SelectItem value="AU">Australia</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
                     </div>
                   </div>
 
@@ -599,7 +763,7 @@ const Auth = () => {
               {currentStep === 2 && (
                 <div className="space-y-6">
                   <div className="text-center space-y-2">
-                    <h2 className="text-2xl font-bold neural-heading">Admin Details</h2>
+                    <h2 className="text-2xl font-bold neural-heading">Account Details</h2>
                     <p className="text-muted-foreground">Create your admin account</p>
                   </div>
 
@@ -617,20 +781,13 @@ const Auth = () => {
                     </div>
 
                     <div>
-                      <Label htmlFor="owner-email" className="flex items-center justify-between">
-                        Email Address *
-                        {emailAvailable !== null && (
-                          <span className={`text-xs ${emailAvailable ? 'text-green-500' : 'text-red-500'}`}>
-                            {emailAvailable ? '✓ Available' : '✗ Already exists'}
-                          </span>
-                        )}
-                      </Label>
+                      <Label htmlFor="owner-email">Email Address *</Label>
                       <Input
                         id="owner-email"
                         type="email"
                         value={ownerEmail}
-                        onChange={(e) => handleEmailChange(e.target.value)}
-                        placeholder="john@company.com"
+                        onChange={(e) => setOwnerEmail(e.target.value)}
+                        placeholder="john@yourrestaurant.com"
                         className="neural-input"
                         required
                       />
@@ -645,56 +802,60 @@ const Auth = () => {
                           </span>
                         )}
                       </Label>
+                      <div className="relative">
+                        <Input
+                          id="owner-password"
+                          type={showPassword ? "text" : "password"}
+                          value={ownerPassword}
+                          onChange={(e) => setOwnerPassword(e.target.value)}
+                          placeholder="••••••••"
+                          className="neural-input pr-10"
+                          required
+                        />
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          className="absolute right-0 top-0 h-full px-3 text-muted-foreground hover:text-foreground"
+                          onClick={() => setShowPassword(!showPassword)}
+                        >
+                          {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                        </Button>
+                      </div>
+                    </div>
+
+                    <div>
+                      <Label htmlFor="confirm-password">Confirm Password *</Label>
                       <Input
-                        id="owner-password"
+                        id="confirm-password"
                         type="password"
-                        value={ownerPassword}
-                        onChange={(e) => setOwnerPassword(e.target.value)}
+                        value={confirmPassword}
+                        onChange={(e) => setConfirmPassword(e.target.value)}
                         placeholder="••••••••"
                         className="neural-input"
                         required
                       />
+                      {confirmPassword && ownerPassword !== confirmPassword && (
+                        <p className="text-xs text-red-500 mt-1">Passwords do not match</p>
+                      )}
                     </div>
 
-                    <div>
-                      <Label htmlFor="owner-phone">Phone Number</Label>
-                      <Input
-                        id="owner-phone"
-                        type="tel"
-                        value={ownerPhone}
-                        onChange={(e) => setOwnerPhone(e.target.value)}
-                        placeholder="+1234567890"
-                        className="neural-input"
+                    <div className="flex items-center space-x-2">
+                      <Checkbox 
+                        id="terms" 
+                        checked={agreeTerms}
+                        onCheckedChange={(checked) => setAgreeTerms(checked === true)}
                       />
-                    </div>
-
-                    <div className="space-y-3">
-                      <div className="flex items-center space-x-2">
-                        <Checkbox 
-                          id="terms" 
-                          checked={agreeTerms}
-                          onCheckedChange={(checked) => setAgreeTerms(checked === true)}
-                        />
-                        <Label htmlFor="terms" className="text-sm">
-                          I agree to the{" "}
-                          <a href="#" className="text-primary hover:underline">
-                            Terms of Service
-                          </a>
-                        </Label>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <Checkbox 
-                          id="privacy" 
-                          checked={agreePrivacy}
-                          onCheckedChange={(checked) => setAgreePrivacy(checked === true)}
-                        />
-                        <Label htmlFor="privacy" className="text-sm">
-                          I agree to the{" "}
-                          <a href="#" className="text-primary hover:underline">
-                            Privacy Policy
-                          </a>
-                        </Label>
-                      </div>
+                      <Label htmlFor="terms" className="text-sm">
+                        I agree to the{" "}
+                        <a href="#" className="text-primary hover:underline">
+                          Terms of Service
+                        </a>
+                        {" "}and{" "}
+                        <a href="#" className="text-primary hover:underline">
+                          Privacy Policy
+                        </a>
+                      </Label>
                     </div>
 
                     <div className="flex gap-3">
@@ -708,7 +869,7 @@ const Auth = () => {
                       </Button>
                       <Button
                         type="submit"
-                        disabled={loading || !agreeTerms || !agreePrivacy}
+                        disabled={loading || !agreeTerms || ownerPassword !== confirmPassword}
                         className="flex-1 neural-button"
                       >
                         {loading ? "Creating Account..." : "Create Account"}
