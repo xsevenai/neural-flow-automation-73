@@ -17,11 +17,11 @@ const Navigation = () => {
   return (
     <>
       {/* Logo in top left corner */}
-      <div className="fixed top-6 left-6 z-50">
+      <div className="fixed top-4 left-4 z-50">
         <img 
           src={companyLogo} 
           alt="X-SevenAI Logo" 
-          className="h-12 w-auto opacity-90 hover:opacity-100 transition-opacity cursor-pointer"
+          className="h-8 w-auto opacity-80 hover:opacity-100 transition-all duration-300 cursor-pointer hover:scale-105 filter drop-shadow-lg"
           onClick={() => window.location.href = '/'}
         />
       </div>
