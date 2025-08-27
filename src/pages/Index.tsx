@@ -1,8 +1,11 @@
 import { useEffect } from "react";
 import HeroSection from "@/components/HeroSection";
+import Navigation from "@/components/Navigation";
 import EnterpriseBar from "@/components/EnterpriseBar";
 import ValuePropositions from "@/components/ValuePropositions";
+import StoryConnector from "@/components/StoryConnector";
 import ArchitectureFlow from "@/components/ArchitectureFlow";
+import PricingSection from "@/components/PricingSection";
 import VoiceChatDemo from "@/components/VoiceChatDemo";
 import FinalCTA from "@/components/FinalCTA";
 
@@ -44,10 +47,13 @@ const Index = () => {
         }}
       />
       
+      <Navigation />
       <HeroSection />
       <EnterpriseBar />
       <ValuePropositions />
+      <StoryConnector />
       <ArchitectureFlow />
+      <PricingSection />
       <VoiceChatDemo />
       <FinalCTA />
     </main>
