@@ -292,21 +292,21 @@
 }
 
 .neural-outline-button {
-  @apply border-primary/50 text-primary hover:bg-primary/8 bg-background/80;
-  @apply transition-all duration-300 backdrop-blur-sm;
+  @apply border-primary/50 text-primary hover:bg-muted transition-all duration-300 backdrop-blur-sm bg-background/80;
   box-shadow: 0 1px 3px rgba(0,0,0,0.1);
 }
 
 .neural-outline-button:hover {
+  background-color: hsl(var(--primary) / 0.08);
   box-shadow: 
     0 4px 16px hsl(var(--primary)/0.25),
     0 2px 8px rgba(0,0,0,0.15);
 }
 
 .neural-tab {
-  @apply data-[state=active]:bg-primary/15 data-[state=active]:text-primary;
-  @apply transition-all duration-300 backdrop-blur-sm;
-  @apply hover:bg-primary/8 border border-transparent data-[state=active]:border-primary/30;
+  @apply data-[state=active]:bg-accent data-[state=active]:text-primary;
+  @apply transition-all duration-300 backdrop-blur-sm hover:bg-muted;
+  @apply border border-transparent data-[state=active]:border-primary/30;
 }
 
 .neural-grid {
