@@ -9,26 +9,28 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
 
-const TypewriterText = ({ text, delay = 0 }: { text: string; delay?: number }) => {
+const WordTypewriter = ({ text, delay = 0 }: { text: string; delay?: number }) => {
   const [displayText, setDisplayText] = useState("");
-  const [currentIndex, setCurrentIndex] = useState(0);
+  const [currentWordIndex, setCurrentWordIndex] = useState(0);
+  
+  const words = text.split(' ');
 
   useEffect(() => {
     const timeout = setTimeout(() => {
-      if (currentIndex < text.length) {
-        setDisplayText(text.slice(0, currentIndex + 1));
-        setCurrentIndex(currentIndex + 1);
+      if (currentWordIndex < words.length) {
+        setDisplayText(words.slice(0, currentWordIndex + 1).join(' '));
+        setCurrentWordIndex(currentWordIndex + 1);
       }
-    }, delay + 15); // Much faster typing speed
+    }, delay + 150); // Fast word-by-word typing
 
     return () => clearTimeout(timeout);
-  }, [currentIndex, text, delay]);
+  }, [currentWordIndex, words, delay]);
 
   return (
     <span className="inline-block">
       {displayText}
-      {currentIndex < text.length && (
-        <span className="animate-pulse">|</span>
+      {currentWordIndex < words.length && (
+        <span className="animate-pulse ml-1">|</span>
       )}
     </span>
   );
@@ -195,25 +197,22 @@ const Auth = () => {
         </motion.div>
 
         {/* Typewriter Headlines */}
-        <div className="space-y-6 text-left">
+        <div className="space-y-4 text-left">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 1 }}
-            className="space-y-4"
+            className="space-y-2"
           >
             <h2 className="text-2xl font-semibold text-foreground">
-              <TypewriterText text="Transform Your Business" delay={300} />
+              <WordTypewriter text="Transform Your Business With Enterprise-Grade AI Automation Platform" delay={500} />
             </h2>
-            <p className="text-lg text-muted-foreground">
-              <TypewriterText text="With Enterprise-Grade AI Automation" delay={800} />
-            </p>
           </motion.div>
 
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ delay: 1.2 }}
+            transition={{ delay: 3 }}
             className="space-y-4"
           >
             <div className="flex items-start gap-3">
@@ -244,7 +243,7 @@ const Auth = () => {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 1.5 }}
+          transition={{ delay: 4 }}
           className="space-y-4"
         >
           <div className="flex items-center justify-center gap-6 text-sm text-muted-foreground">
