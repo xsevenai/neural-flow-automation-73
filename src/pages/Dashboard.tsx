@@ -33,7 +33,16 @@ const Dashboard = () => {
 
   // Authentication and user data fetching
   useEffect(() => {
-    checkAuth();
+    // Temporarily disabled for testing - uncomment when ready for production
+    // checkAuth();
+    
+    // Mock data for testing
+    setUser({ id: 'test', email: 'test@example.com' });
+    setBusinessData({
+      name: 'Demo Restaurant',
+      type: 'Food & Hospitality'
+    });
+    setLoading(false);
   }, []);
 
   const checkAuth = async () => {
@@ -63,6 +72,14 @@ const Dashboard = () => {
   };
 
   const handleLogout = async () => {
+    // For testing, just navigate to auth
+    navigate('/auth');
+    toast({
+      title: "Logged out successfully",
+      description: "You have been logged out of your account",
+    });
+    
+    /* Uncomment when ready for production:
     try {
       await supabase.auth.signOut();
       navigate('/auth');
@@ -78,10 +95,18 @@ const Dashboard = () => {
         variant: "destructive",
       });
     }
+    */
   };
 
   // API helper function for backend calls
   const apiCall = async (endpoint: string, options: RequestInit = {}) => {
+    // For testing, just log the API call
+    console.log(`API Call: ${endpoint}`, options);
+    
+    // Mock response for testing
+    return new Promise(resolve => setTimeout(resolve, 500));
+    
+    /* Uncomment when ready for production:
     const token = (await supabase.auth.getSession()).data.session?.access_token;
     
     return fetch(`/api${endpoint}`, {
@@ -92,6 +117,7 @@ const Dashboard = () => {
         ...options.headers,
       },
     });
+    */
   };
 
   if (loading) {
