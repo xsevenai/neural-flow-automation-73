@@ -269,17 +269,84 @@ const Auth = () => {
       if (profile) {
         // User has business profile, redirect to dashboard
         navigate('/dashboard');
-      } else if (isLogin) {
-        // Logged in but no business profile, show error
-        toast({
-          title: "Account Setup Required",
-          description: "Please complete your business setup first.",
-          variant: "destructive",
-        });
-        setIsLogin(false);
-        setCurrentStep(1);
+      } else {
+        // Check for temporary business data from signup
+        const tempBusinessData = localStorage.getItem('tempBusinessData');
+        
+        if (tempBusinessData && !isLogin) {
+          // User just signed up, create business profile
+          try {
+            const businessData = JSON.parse(tempBusinessData);
+            
+            const { error: profileError } = await supabase
+              .from('business_profiles')
+              .insert({
+                user_id: user.id,
+                business_name: businessData.businessName,
+                business_type: businessData.businessType,
+                business_email: businessData.businessEmail,
+                business_phone: businessData.businessPhone,
+                business_address: businessData.businessAddress,
+                business_city: businessData.businessCity,
+                business_state: businessData.businessState,
+                business_country: businessData.businessCountry
+              });
+
+            if (profileError) {
+              throw profileError;
+            }
+
+            // Get the created business profile
+            const { data: newProfile } = await supabase
+              .from('business_profiles')
+              .select('id')
+              .eq('user_id', user.id)
+              .single();
+
+            if (newProfile) {
+              // Create default working hours
+              const daysOfWeek = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+              const workingHoursData = daysOfWeek.map(day => ({
+                business_id: newProfile.id,
+                day_of_week: day,
+                open_time: day === 'Saturday' || day === 'Sunday' ? '10:00' : '09:00',
+                close_time: day === 'Saturday' || day === 'Sunday' ? '23:00' : '22:00',
+                is_open: true
+              }));
+
+              await supabase
+                .from('working_hours')
+                .insert(workingHoursData);
+            }
+
+            localStorage.removeItem('tempBusinessData');
+            
+            toast({
+              title: "Business Setup Complete!",
+              description: "Welcome to X-SevenAI! Your business profile has been created.",
+            });
+            
+            navigate('/dashboard');
+          } catch (error) {
+            console.error('Error creating business profile:', error);
+            localStorage.removeItem('tempBusinessData');
+            toast({
+              title: "Setup Error",
+              description: "Failed to create business profile. Please try again.",
+              variant: "destructive",
+            });
+          }
+        } else if (isLogin) {
+          // Logged in but no business profile, show error
+          toast({
+            title: "Account Setup Required",
+            description: "Please complete your business setup first.",
+            variant: "destructive",
+          });
+          setIsLogin(false);
+          setCurrentStep(1);
+        }
       }
-      // If signing up, continue with business profile creation
     } catch (error) {
       console.error('Error checking business profile:', error);
     }
@@ -397,6 +464,19 @@ const Auth = () => {
     setLoading(true);
     
     try {
+      // Store business data temporarily in localStorage for the auth success handler
+      const businessData = {
+        businessName,
+        businessType,
+        businessEmail,
+        businessPhone: businessPhone || null,
+        businessAddress: businessAddress || null,
+        businessCity: businessCity || null,
+        businessState: businessState || null,
+        businessCountry
+      };
+      localStorage.setItem('tempBusinessData', JSON.stringify(businessData));
+
       // Create auth user
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email: ownerEmail,
@@ -410,73 +490,22 @@ const Auth = () => {
         throw authError;
       }
 
-      if (!authData.user) {
-        throw new Error('User creation failed');
-      }
-
-      // Create business profile
-      const { error: profileError } = await supabase
-        .from('business_profiles')
-        .insert({
-          user_id: authData.user.id,
-          business_name: businessName,
-          business_type: businessType,
-          business_email: businessEmail,
-          business_phone: businessPhone || null,
-          business_address: businessAddress || null,
-          business_city: businessCity || null,
-          business_state: businessState || null,
-          business_country: businessCountry
-        });
-
-      if (profileError) {
-        throw profileError;
-      }
-
-      // Create default working hours
-      const defaultHours = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'].map(day => ({
-        business_id: null, // Will be set by the trigger
-        day_of_week: day,
-        is_open: day !== 'sun' && day !== 'sat',
-        open_time: day !== 'sun' && day !== 'sat' ? '09:00' : null,
-        close_time: day !== 'sun' && day !== 'sat' ? '17:00' : null
-      }));
-
-      // Get the created business profile to get the ID
-      const { data: businessProfile } = await supabase
-        .from('business_profiles')
-        .select('id')
-        .eq('user_id', authData.user.id)
-        .single();
-
-      if (businessProfile) {
-        await supabase
-          .from('working_hours')
-          .insert(
-            defaultHours.map(hour => ({
-              ...hour,
-              business_id: businessProfile.id
-            }))
-          );
-      }
+      // Clear stored data after successful auth
+      localStorage.removeItem('tempBusinessData');
 
       toast({
         title: "Account Created!",
-        description: "Welcome to X-SevenAI! Please check your email to verify your account.",
+        description: authData.session ? 
+          "Welcome to X-SevenAI! Setting up your business profile..." :
+          "Please check your email to verify your account.",
       });
 
-      // If email confirmation is disabled, redirect immediately
-      if (authData.session) {
-        navigate('/dashboard');
-      } else {
-        toast({
-          title: "Email Verification Required",
-          description: "Please check your email and click the verification link to complete setup.",
-        });
-      }
+      // If email confirmation is disabled, user will be automatically signed in
+      // and handleAuthSuccess will create the business profile
       
     } catch (error: any) {
       console.error('Signup error:', error);
+      localStorage.removeItem('tempBusinessData');
       toast({
         title: "Registration Failed",
         description: error.message || "Failed to create account. Please try again.",
