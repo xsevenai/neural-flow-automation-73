@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarProvider, SidebarTrigger, useSidebar } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -7,11 +7,19 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Home, MessageSquare, UtensilsCrossed, Database, LayoutGrid, QrCode, Users, FileText, Clock, BarChart3, Share2, Settings, Bell, MapPin, Calendar, ShoppingCart, MessageCircle, User } from 'lucide-react';
-import { useLocation } from 'react-router-dom';
+import { Home, MessageSquare, UtensilsCrossed, Database, LayoutGrid, QrCode, Users, FileText, Clock, BarChart3, Share2, Settings, Bell, MapPin, Calendar, ShoppingCart, MessageCircle, User, LogOut } from 'lucide-react';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
 
 const Dashboard = () => {
   const [activeSection, setActiveSection] = useState('dashboard');
+  const [user, setUser] = useState<any>(null);
+  const [businessData, setBusinessData] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
+  const { toast } = useToast();
+  
   const [workingHours, setWorkingHours] = useState({
     mon: { open: true, start: '09:00', end: '17:00' },
     tue: { open: true, start: '09:00', end: '17:00' },
@@ -22,6 +30,77 @@ const Dashboard = () => {
     sun: { open: false, start: '---', end: '---' }
   });
   const [chatMessage, setChatMessage] = useState('');
+
+  // Authentication and user data fetching
+  useEffect(() => {
+    checkAuth();
+  }, []);
+
+  const checkAuth = async () => {
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session) {
+        navigate('/auth');
+        return;
+      }
+
+      setUser(session.user);
+      
+      // Fetch business data - you can replace this with your API endpoint
+      // For now using mock data, replace with actual API call
+      const mockBusinessData = {
+        name: session.user.user_metadata?.business_name || 'Your Business',
+        type: 'Restaurant'
+      };
+      setBusinessData(mockBusinessData);
+    } catch (error) {
+      console.error('Auth error:', error);
+      navigate('/auth');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleLogout = async () => {
+    try {
+      await supabase.auth.signOut();
+      navigate('/auth');
+      toast({
+        title: "Logged out successfully",
+        description: "You have been logged out of your account",
+      });
+    } catch (error) {
+      console.error('Logout error:', error);
+      toast({
+        title: "Error",
+        description: "Failed to logout. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  // API helper function for backend calls
+  const apiCall = async (endpoint: string, options: RequestInit = {}) => {
+    const token = (await supabase.auth.getSession()).data.session?.access_token;
+    
+    return fetch(`/api${endpoint}`, {
+      ...options,
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+        ...options.headers,
+      },
+    });
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-slate-900 flex items-center justify-center">
+        <div className="text-white">Loading...</div>
+      </div>
+    );
+  }
 
   const sidebarItems = [
     { title: "Home", url: "/dashboard", icon: Home, section: "dashboard", subtitle: "Overview and quick actions" },
@@ -41,7 +120,7 @@ const Dashboard = () => {
     switch (activeSection) {
       case 'hours':
         return (
-          <div className="space-y-6">
+          <div className="space-y-6 h-full overflow-y-auto">
             <div>
               <h1 className="text-2xl font-bold text-white mb-2">Working Hours</h1>
               <p className="text-slate-400 mb-6">Configure weekly open/close times</p>
@@ -50,7 +129,7 @@ const Dashboard = () => {
 
             <Card className="bg-slate-700 border-slate-600">
               <CardContent className="p-6">
-                <div className="space-y-4">
+                <div className="space-y-4 max-h-96 overflow-y-auto">
                   {Object.entries(workingHours).map(([day, hours]) => (
                     <div key={day} className="flex items-center justify-between py-3">
                       <div className="w-12">
@@ -105,7 +184,29 @@ const Dashboard = () => {
                   ))}
                 </div>
                 <div className="flex gap-3 mt-6 pt-4 border-t border-slate-600">
-                  <Button variant="outline" className="bg-slate-600 border-slate-500 text-white hover:bg-slate-500">
+                  <Button 
+                    variant="outline" 
+                    className="bg-slate-600 border-slate-500 text-white hover:bg-slate-500"
+                    onClick={async () => {
+                      try {
+                        // API call to save working hours
+                        await apiCall('/working-hours', {
+                          method: 'POST',
+                          body: JSON.stringify(workingHours)
+                        });
+                        toast({
+                          title: "Settings saved",
+                          description: "Working hours updated successfully",
+                        });
+                      } catch (error) {
+                        toast({
+                          title: "Error",
+                          description: "Failed to save working hours",
+                          variant: "destructive",
+                        });
+                      }
+                    }}
+                  >
                     Reset
                   </Button>
                   <Button className="bg-emerald-600 hover:bg-emerald-700 text-white">
@@ -119,7 +220,7 @@ const Dashboard = () => {
 
       case 'table-management':
         return (
-          <div className="space-y-6">
+          <div className="space-y-6 h-full overflow-y-auto">
             <div>
               <h1 className="text-2xl font-bold text-white mb-2">Table Layout</h1>
               <p className="text-slate-400 mb-6">Visualize table occupancy and manage reservations</p>
@@ -127,7 +228,7 @@ const Dashboard = () => {
 
             <Card className="bg-slate-700 border-slate-600">
               <CardContent className="p-6">
-                <div className="grid grid-cols-6 gap-4 mb-6">
+                <div className="grid grid-cols-6 gap-4 mb-6 max-h-64 overflow-y-auto">
                   {Array.from({ length: 12 }, (_, i) => (
                     <div key={i} className="bg-slate-600 rounded-lg p-4 text-center border border-slate-500">
                       <div className="text-white font-medium mb-1">T{i + 1}</div>
@@ -135,7 +236,25 @@ const Dashboard = () => {
                     </div>
                   ))}
                 </div>
-                <Button className="bg-slate-600 border border-slate-500 text-white hover:bg-slate-500">
+                <Button 
+                  className="bg-slate-600 border border-slate-500 text-white hover:bg-slate-500"
+                  onClick={async () => {
+                    try {
+                      // API call to generate QR codes
+                      await apiCall('/generate-qr', { method: 'POST' });
+                      toast({
+                        title: "QR Generated",
+                        description: "Table QR codes generated successfully",
+                      });
+                    } catch (error) {
+                      toast({
+                        title: "Error", 
+                        description: "Failed to generate QR codes",
+                        variant: "destructive",
+                      });
+                    }
+                  }}
+                >
                   🔗 Generate Table QR
                 </Button>
               </CardContent>
@@ -145,7 +264,7 @@ const Dashboard = () => {
 
       case 'menu-management':
         return (
-          <div className="space-y-6">
+          <div className="space-y-6 h-full overflow-y-auto">
             <div>
               <h1 className="text-2xl font-bold text-white mb-2">Menu Items Database</h1>
               <p className="text-slate-400 mb-6">Browse by category and manage pricing, availability</p>
@@ -153,7 +272,28 @@ const Dashboard = () => {
 
             <Card className="bg-slate-700 border-slate-600">
               <CardContent className="p-6">
-                <Button className="bg-slate-600 border border-slate-500 text-white hover:bg-slate-500 mb-4">
+                <Button 
+                  className="bg-slate-600 border border-slate-500 text-white hover:bg-slate-500 mb-4"
+                  onClick={async () => {
+                    try {
+                      // API call to add category
+                      await apiCall('/menu/categories', {
+                        method: 'POST',
+                        body: JSON.stringify({ name: 'New Category' })
+                      });
+                      toast({
+                        title: "Category Added",
+                        description: "New menu category created successfully",
+                      });
+                    } catch (error) {
+                      toast({
+                        title: "Error",
+                        description: "Failed to add category",
+                        variant: "destructive",
+                      });
+                    }
+                  }}
+                >
                   + Add Category
                 </Button>
                 <div className="text-slate-300">No categories added yet. Click "Add Category" to get started.</div>
@@ -164,13 +304,13 @@ const Dashboard = () => {
 
       case 'chat':
         return (
-          <div className="space-y-6">
+          <div className="space-y-6 h-full overflow-y-auto">
             <div>
               <h1 className="text-2xl font-bold text-white mb-2">Dashboard AI</h1>
               <p className="text-slate-400 mb-6">Business Owners Chatting</p>
             </div>
 
-            <Card className="bg-slate-700 border-slate-600 h-96">
+            <Card className="bg-slate-700 border-slate-600 flex-1">
               <CardContent className="p-0 h-full flex flex-col">
                 <div className="flex-1 p-6">
                   <div className="text-slate-300 text-center">Start a conversation with your AI assistant</div>
@@ -186,7 +326,28 @@ const Dashboard = () => {
                     />
                     <Button 
                       className="bg-emerald-600 hover:bg-emerald-700"
-                      onClick={() => setChatMessage('')}
+                      onClick={async () => {
+                        if (chatMessage.trim()) {
+                          try {
+                            // API call to send message to AI
+                            await apiCall('/chat', {
+                              method: 'POST',
+                              body: JSON.stringify({ message: chatMessage })
+                            });
+                            setChatMessage('');
+                            toast({
+                              title: "Message sent",
+                              description: "Your message has been sent to the AI assistant",
+                            });
+                          } catch (error) {
+                            toast({
+                              title: "Error",
+                              description: "Failed to send message",
+                              variant: "destructive",
+                            });
+                          }
+                        }
+                      }}
                     >
                       ➤
                     </Button>
@@ -199,7 +360,7 @@ const Dashboard = () => {
 
       default:
         return (
-          <div className="space-y-6">
+          <div className="space-y-6 h-full overflow-y-auto">
             <div>
               <h1 className="text-2xl font-bold text-white mb-2">Dashboard</h1>
               <p className="text-slate-400 mb-6">Overview and quick actions</p>
@@ -252,17 +413,28 @@ const Dashboard = () => {
 
   return (
     <SidebarProvider>
-      <div className="min-h-screen w-full bg-slate-900 p-4">
-        <div className="grid grid-cols-12 gap-4 h-screen">
+      <div className="h-screen w-full bg-slate-900 p-4 overflow-hidden">
+        <div className="grid grid-cols-12 gap-4 h-full">
           
           {/* Left Panel - Navigation */}
-          <div className="col-span-3">
-            <div className="bg-slate-800 rounded-xl border border-slate-700 h-full overflow-hidden">
-              <div className="p-4 border-b border-slate-700">
-                <h1 className="text-white text-xl font-semibold">naveen</h1>
+          <div className="col-span-3 h-full">
+            <div className="bg-slate-800 rounded-xl border border-slate-700 h-full overflow-hidden flex flex-col">
+              <div className="p-4 border-b border-slate-700 flex-shrink-0">
+                <div className="flex items-center justify-between">
+                  <h1 className="text-white text-xl font-semibold">{businessData?.name}</h1>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={handleLogout}
+                    className="text-slate-300 hover:text-white"
+                  >
+                    <LogOut className="h-4 w-4" />
+                  </Button>
+                </div>
+                <p className="text-slate-400 text-sm">{businessData?.type}</p>
               </div>
               
-              <div className="p-3 h-full overflow-y-auto">
+              <div className="flex-1 p-3 overflow-y-auto">
                 <div className="space-y-2">
                   {sidebarItems.map((item) => (
                     <div key={item.title} className="mb-2">
@@ -300,10 +472,10 @@ const Dashboard = () => {
           </div>
 
           {/* Center Panel - Main Content */}
-          <div className="col-span-6">
+          <div className="col-span-6 h-full">
             <div className="bg-slate-800 rounded-xl border border-slate-700 h-full overflow-hidden flex flex-col">
               {/* Top Header */}
-              <div className="bg-slate-800 border-b border-slate-700 p-4">
+              <div className="bg-slate-800 border-b border-slate-700 p-4 flex-shrink-0">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <div className="w-2 h-2 bg-emerald-400 rounded-full"></div>
@@ -340,9 +512,9 @@ const Dashboard = () => {
           </div>
 
           {/* Right Panel - Live & Notifications */}
-          <div className="col-span-3">
-            <div className="bg-slate-800 rounded-xl border border-slate-700 h-full overflow-hidden">
-              <div className="p-6 h-full overflow-y-auto">
+          <div className="col-span-3 h-full">
+            <div className="bg-slate-800 rounded-xl border border-slate-700 h-full overflow-hidden flex flex-col">
+              <div className="p-6 flex-1 overflow-y-auto">
                 <div className="space-y-6">
                   <div className="flex items-center justify-between">
                     <h2 className="text-white font-medium">Live</h2>
