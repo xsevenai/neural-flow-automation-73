@@ -3,6 +3,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Menu, X, User, CreditCard, Zap, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { Separator } from "@/components/ui/separator";
+import ThemeToggle from "@/components/ThemeToggle";
 import companyLogo from "@/assets/company-logo.svg";
 
 const Navigation = () => {
@@ -111,9 +113,19 @@ const Navigation = () => {
                 </Button>
               </motion.div>
 
+              {/* Theme Toggle */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.5 }}
+              >
+                <Separator className="my-4" />
+                <ThemeToggle />
+              </motion.div>
+
               {/* Quick Stats */}
               <motion.div 
-                className="pt-8 border-t border-border/30 space-y-2"
+                className="pt-4 border-t border-border/30 space-y-2"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.6 }}

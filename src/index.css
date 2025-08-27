@@ -8,7 +8,70 @@
 
 @layer base {
   :root {
-    /* Neural Network Core Colors */
+    /* Light Theme - Neural Network Core Colors */
+    --background: 210 25% 97%;
+    --foreground: 220 15% 15%;
+    
+    /* Surface Colors */
+    --surface-dark: 210 20% 94%;
+    --surface-medium: 210 15% 90%;
+    --surface-light: 210 25% 98%;
+    --surface-glass: 210 25% 97% / 0.7;
+    
+    /* Neural Accent Colors */
+    --neural-cyan: 190 85% 45%;
+    --neural-violet: 270 75% 50%;
+    --neural-chrome: 220 15% 25%;
+    
+    /* Glow Effects */
+    --glow-cyan: 190 85% 45% / 0.2;
+    --glow-violet: 270 75% 50% / 0.2;
+    --glow-chrome: 220 15% 25% / 0.1;
+    
+    /* Enterprise Colors */
+    --primary: 190 85% 45%;
+    --primary-foreground: 210 25% 97%;
+    --secondary: 210 20% 94%;
+    --secondary-foreground: 220 15% 15%;
+    
+    /* Cards & Panels */
+    --card: 210 25% 98% / 0.9;
+    --card-foreground: 220 15% 15%;
+    --glass-border: 220 15% 25% / 0.1;
+    
+    /* Interactive States */
+    --accent: 270 75% 50%;
+    --accent-foreground: 210 25% 97%;
+    --muted: 210 15% 90%;
+    --muted-foreground: 220 15% 45%;
+    
+    /* Utility Colors */
+    --border: 220 15% 25% / 0.1;
+    --input: 210 20% 94%;
+    --ring: 190 85% 45%;
+    --destructive: 0 85% 60%;
+    --destructive-foreground: 210 40% 98%;
+    
+    /* Additional light theme colors */
+    --popover: 210 25% 97%;
+    --popover-foreground: 220 15% 15%;
+    
+    /* Spacing & Effects */
+    --radius: 12px;
+    --neural-blur: 20px;
+
+    --sidebar-background: 0 0% 98%;
+    --sidebar-foreground: 240 5.3% 26.1%;
+    --sidebar-primary: 240 5.9% 10%;
+    --sidebar-primary-foreground: 0 0% 98%;
+    --sidebar-accent: 240 4.8% 95.9%;
+    --sidebar-accent-foreground: 240 5.9% 10%;
+    --sidebar-border: 220 13% 91%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+
+  .dark {
+    /* Dark Theme - Neural Network Core Colors */
     --background: 220 15% 8%;
     --foreground: 210 25% 95%;
     
@@ -52,55 +115,10 @@
     --destructive: 0 85% 60%;
     --destructive-foreground: 210 40% 98%;
     
-    /* Spacing & Effects */
-    --radius: 12px;
-    --neural-blur: 20px;
-
-    --sidebar-background: 0 0% 98%;
-
-    --sidebar-foreground: 240 5.3% 26.1%;
-
-    --sidebar-primary: 240 5.9% 10%;
-
-    --sidebar-primary-foreground: 0 0% 98%;
-
-    --sidebar-accent: 240 4.8% 95.9%;
-
-    --sidebar-accent-foreground: 240 5.9% 10%;
-
-    --sidebar-border: 220 13% 91%;
-
-    --sidebar-ring: 217.2 91.2% 59.8%;
-  }
-
-  .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
-
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
-
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
-
-    --primary: 210 40% 98%;
-    --primary-foreground: 222.2 47.4% 11.2%;
-
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
-
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
-
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 212.7 26.8% 83.9%;
+    /* Additional dark theme colors */
+    --popover: 220 15% 8%;
+    --popover-foreground: 210 25% 95%;
+    
     --sidebar-background: 240 5.9% 10%;
     --sidebar-foreground: 240 4.8% 95.9%;
     --sidebar-primary: 224.3 76.3% 48%;
