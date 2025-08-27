@@ -361,54 +361,6 @@ const Auth = () => {
         >
           <NeuralBrainAnimation />
         </motion.div>
-
-        {/* Key Features */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 5 }}
-          className="space-y-4"
-        >
-          <h3 className="text-xl font-semibold text-center text-foreground mb-6">
-            Enterprise AI Automation
-          </h3>
-          <div className="space-y-3">
-            <div className="flex items-center gap-3 justify-center">
-              <div className="w-2 h-2 rounded-full bg-primary neural-glow"></div>
-              <span className="text-sm text-muted-foreground">Intelligent Workflow Automation</span>
-            </div>
-            <div className="flex items-center gap-3 justify-center">
-              <div className="w-2 h-2 rounded-full bg-accent neural-glow"></div>
-              <span className="text-sm text-muted-foreground">Advanced Customer Intelligence</span>
-            </div>
-            <div className="flex items-center gap-3 justify-center">
-              <div className="w-2 h-2 rounded-full bg-secondary neural-glow"></div>
-              <span className="text-sm text-muted-foreground">Enterprise Security & Compliance</span>
-            </div>
-          </div>
-        </motion.div>
-
-        {/* Trust Indicators */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 6 }}
-          className="space-y-4"
-        >
-          <div className="flex items-center justify-center gap-6 text-sm text-muted-foreground">
-            <div className="flex items-center gap-2">
-              <Shield className="h-4 w-4 text-green-500" />
-              <span>SOC 2 Certified</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <Star className="h-4 w-4 text-yellow-500" />
-              <span>99.9% Uptime</span>
-            </div>
-          </div>
-          <p className="text-xs text-muted-foreground">
-            Trusted by 10,000+ businesses worldwide
-          </p>
-        </motion.div>
       </div>
     </div>
   );
