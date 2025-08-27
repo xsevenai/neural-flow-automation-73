@@ -42,7 +42,7 @@ const SubscriptionPlans = () => {
     {
       id: "professional",
       name: "AI Professional",
-      icon: <Bot className="h-6 w-6" />,
+      icon: <img src="/src/assets/company-logo.svg" alt="Professional Plan" className="h-6 w-6 object-contain" />,
       price: "$149",
       period: "per month",
       description: "Advanced AI capabilities for growing businesses",
@@ -151,8 +151,12 @@ const SubscriptionPlans = () => {
           className="text-center mb-12"
         >
           <div className="inline-flex items-center gap-2 mb-4">
-            <div className="w-12 h-12 bg-gradient-to-br from-primary to-accent rounded-full flex items-center justify-center neural-glow">
-              <Bot className="h-6 w-6 text-white" />
+            <div className="w-12 h-12 flex items-center justify-center">
+              <img 
+                src="/src/assets/company-logo.svg" 
+                alt="X-SevenAI Logo" 
+                className="w-10 h-10 object-contain"
+              />
             </div>
             <h1 className="text-3xl font-bold bg-gradient-to-r from-primary via-accent to-secondary bg-clip-text text-transparent neural-heading">
               X-SevenAI

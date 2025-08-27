@@ -347,9 +347,16 @@ const Auth = () => {
           transition={{ duration: 0.8 }}
           className="space-y-4"
         >
-          <h1 className="text-4xl font-bold bg-gradient-to-r from-primary via-accent to-secondary bg-clip-text text-transparent">
-            X-SevenAI
-          </h1>
+          <div className="flex items-center justify-center gap-3">
+            <img 
+              src="/src/assets/company-logo.svg" 
+              alt="X-SevenAI Logo" 
+              className="w-12 h-12 object-contain"
+            />
+            <h1 className="text-4xl font-bold bg-gradient-to-r from-primary via-accent to-secondary bg-clip-text text-transparent">
+              X-SevenAI
+            </h1>
+          </div>
         </motion.div>
 
         {/* Neural Brain Animation */}
