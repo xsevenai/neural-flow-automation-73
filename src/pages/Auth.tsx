@@ -10,162 +10,183 @@ import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
 
 const NeuralBrainAnimation = () => {
-  const [animationPhase, setAnimationPhase] = useState(0);
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    const timer1 = setTimeout(() => setAnimationPhase(1), 1000);
-    const timer2 = setTimeout(() => setAnimationPhase(2), 3000);
-    const timer3 = setTimeout(() => setAnimationPhase(3), 5000);
-    
-    return () => {
-      clearTimeout(timer1);
-      clearTimeout(timer2);
-      clearTimeout(timer3);
-    };
+    setMounted(true);
   }, []);
+
+  if (!mounted) return null;
 
   return (
     <div className="relative w-80 h-80 mx-auto">
-      {/* Dropping Circles */}
-      {animationPhase >= 1 && (
-        <>
-          {[...Array(12)].map((_, i) => (
-            <motion.div
-              key={`circle-${i}`}
-              className="absolute w-3 h-3 bg-gradient-to-br from-primary to-accent rounded-full"
-              initial={{ 
-                x: Math.random() * 300,
-                y: -20,
-                opacity: 0.8,
-                scale: 0.5
-              }}
-              animate={{ 
-                y: 150 + Math.random() * 100,
-                x: 120 + (i - 6) * 20 + Math.random() * 40,
-                scale: 1,
-                opacity: animationPhase >= 2 ? 0.3 : 0.8
-              }}
-              transition={{ 
-                duration: 2,
-                delay: i * 0.1,
-                ease: "easeOut"
-              }}
-            />
-          ))}
-        </>
-      )}
+      {/* Dropping Circles from all sides */}
+      {[...Array(16)].map((_, i) => {
+        const side = i % 4; // 0: top, 1: right, 2: bottom, 3: left
+        let startX, startY, endX, endY;
+        
+        switch(side) {
+          case 0: // top
+            startX = Math.random() * 320;
+            startY = -20;
+            endX = 120 + (i - 8) * 15;
+            endY = 100 + Math.random() * 80;
+            break;
+          case 1: // right
+            startX = 340;
+            startY = Math.random() * 320;
+            endX = 200 + Math.random() * 80;
+            endY = 120 + (i - 8) * 15;
+            break;
+          case 2: // bottom
+            startX = Math.random() * 320;
+            startY = 340;
+            endX = 120 + (i - 8) * 15;
+            endY = 200 + Math.random() * 80;
+            break;
+          default: // left
+            startX = -20;
+            startY = Math.random() * 320;
+            endX = 40 + Math.random() * 80;
+            endY = 120 + (i - 8) * 15;
+        }
 
-      {/* Neural Network Formation */}
-      {animationPhase >= 2 && (
-        <motion.div
-          initial={{ opacity: 0, scale: 0.8 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 1.5 }}
-          className="absolute inset-0"
-        >
-          {/* Central Brain Core */}
+        return (
           <motion.div
-            className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-16 h-16 bg-gradient-to-br from-primary via-accent to-secondary rounded-full neural-glow"
+            key={`circle-${i}`}
+            className="absolute w-2 h-2 bg-gradient-to-br from-primary to-accent rounded-full"
+            initial={{ 
+              x: startX,
+              y: startY,
+              opacity: 0.8,
+              scale: 0.5
+            }}
             animate={{ 
-              scale: [1, 1.1, 1],
-              opacity: [0.8, 1, 0.8]
+              y: endY,
+              x: endX,
+              scale: 1,
+              opacity: 0.3
             }}
             transition={{ 
-              duration: 2,
-              repeat: Infinity,
-              ease: "easeInOut"
+              duration: 2 + Math.random(),
+              delay: i * 0.1,
+              ease: "easeOut"
             }}
           />
+        );
+      })}
 
-          {/* Neural Nodes */}
+      {/* Neural Network Formation */}
+      <motion.div
+        initial={{ opacity: 0, scale: 0.8 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 1.5, delay: 2 }}
+        className="absolute inset-0"
+      >
+        {/* Central Brain Core */}
+        <motion.div
+          className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-12 h-12 bg-gradient-to-br from-primary via-accent to-secondary rounded-full neural-glow"
+          animate={{ 
+            scale: [1, 1.1, 1],
+            opacity: [0.8, 1, 0.8]
+          }}
+          transition={{ 
+            duration: 2,
+            repeat: Infinity,
+            ease: "easeInOut"
+          }}
+        />
+
+        {/* Neural Nodes */}
+        {[...Array(8)].map((_, i) => {
+          const angle = (i * 45) * (Math.PI / 180);
+          const radius = 60;
+          const x = Math.cos(angle) * radius;
+          const y = Math.sin(angle) * radius;
+          
+          return (
+            <motion.div
+              key={`node-${i}`}
+              className="absolute w-3 h-3 bg-gradient-to-br from-accent to-primary rounded-full"
+              style={{
+                left: `calc(50% + ${x}px)`,
+                top: `calc(50% + ${y}px)`,
+                transform: 'translate(-50%, -50%)'
+              }}
+              animate={{ 
+                scale: [0.8, 1.2, 0.8],
+                opacity: [0.6, 1, 0.6]
+              }}
+              transition={{ 
+                duration: 1.5,
+                repeat: Infinity,
+                delay: i * 0.2,
+                ease: "easeInOut"
+              }}
+            />
+          );
+        })}
+
+        {/* Connecting Lines */}
+        <svg className="absolute inset-0 w-full h-full">
           {[...Array(8)].map((_, i) => {
             const angle = (i * 45) * (Math.PI / 180);
-            const radius = 80;
-            const x = Math.cos(angle) * radius;
-            const y = Math.sin(angle) * radius;
+            const radius = 60;
+            const x = 160 + Math.cos(angle) * radius;
+            const y = 160 + Math.sin(angle) * radius;
             
             return (
-              <motion.div
-                key={`node-${i}`}
-                className="absolute w-4 h-4 bg-gradient-to-br from-accent to-primary rounded-full"
-                style={{
-                  left: `calc(50% + ${x}px)`,
-                  top: `calc(50% + ${y}px)`,
-                  transform: 'translate(-50%, -50%)'
-                }}
-                animate={{ 
-                  scale: [0.8, 1.2, 0.8],
-                  opacity: [0.6, 1, 0.6]
-                }}
+              <motion.line
+                key={`line-${i}`}
+                x1="160"
+                y1="160"
+                x2={x}
+                y2={y}
+                stroke="url(#gradient)"
+                strokeWidth="1"
+                initial={{ pathLength: 0, opacity: 0 }}
+                animate={{ pathLength: 1, opacity: 0.6 }}
                 transition={{ 
-                  duration: 1.5,
-                  repeat: Infinity,
-                  delay: i * 0.2,
+                  duration: 1,
+                  delay: 2.5 + i * 0.1,
                   ease: "easeInOut"
                 }}
               />
             );
           })}
+          <defs>
+            <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity="0.8" />
+              <stop offset="100%" stopColor="hsl(var(--accent))" stopOpacity="0.3" />
+            </linearGradient>
+          </defs>
+        </svg>
 
-          {/* Connecting Lines */}
-          <svg className="absolute inset-0 w-full h-full">
-            {[...Array(8)].map((_, i) => {
-              const angle = (i * 45) * (Math.PI / 180);
-              const radius = 80;
-              const x = 160 + Math.cos(angle) * radius;
-              const y = 160 + Math.sin(angle) * radius;
-              
-              return (
-                <motion.line
-                  key={`line-${i}`}
-                  x1="160"
-                  y1="160"
-                  x2={x}
-                  y2={y}
-                  stroke="url(#gradient)"
-                  strokeWidth="1"
-                  initial={{ pathLength: 0, opacity: 0 }}
-                  animate={{ pathLength: 1, opacity: 0.6 }}
-                  transition={{ 
-                    duration: 1,
-                    delay: 0.5 + i * 0.1,
-                    ease: "easeInOut"
-                  }}
-                />
-              );
-            })}
-            <defs>
-              <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity="0.8" />
-                <stop offset="100%" stopColor="hsl(var(--accent))" stopOpacity="0.3" />
-              </linearGradient>
-            </defs>
-          </svg>
-
-          {/* Neural Pulses */}
-          {animationPhase >= 3 && (
-            <>
-              {[...Array(4)].map((_, i) => (
-                <motion.div
-                  key={`pulse-${i}`}
-                  className="absolute top-1/2 left-1/2 w-32 h-32 border border-primary/30 rounded-full"
-                  style={{ transform: 'translate(-50%, -50%)' }}
-                  animate={{ 
-                    scale: [0, 2],
-                    opacity: [0.8, 0]
-                  }}
-                  transition={{ 
-                    duration: 3,
-                    repeat: Infinity,
-                    delay: i * 0.75,
-                    ease: "easeOut"
-                  }}
-                />
-              ))}
-            </>
-          )}
+        {/* Neural Pulses */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 4 }}
+        >
+          {[...Array(3)].map((_, i) => (
+            <motion.div
+              key={`pulse-${i}`}
+              className="absolute top-1/2 left-1/2 w-24 h-24 border border-primary/30 rounded-full"
+              style={{ transform: 'translate(-50%, -50%)' }}
+              animate={{ 
+                scale: [0, 2.5],
+                opacity: [0.8, 0]
+              }}
+              transition={{ 
+                duration: 3,
+                repeat: Infinity,
+                delay: i * 1,
+                ease: "easeOut"
+              }}
+            />
+          ))}
         </motion.div>
-      )}
+      </motion.div>
     </div>
   );
 };
@@ -185,6 +206,10 @@ const Auth = () => {
   const [businessName, setBusinessName] = useState("");
   const [businessSlug, setBusinessSlug] = useState("");
   const [businessCategory, setBusinessCategory] = useState("");
+  const [businessEmail, setBusinessEmail] = useState("");
+  const [businessAddress, setBusinessAddress] = useState("");
+  const [businessLocation, setBusinessLocation] = useState("");
+  const [googleBusinessLink, setGoogleBusinessLink] = useState("");
   const [ownerName, setOwnerName] = useState("");
   const [ownerEmail, setOwnerEmail] = useState("");
   const [ownerPassword, setOwnerPassword] = useState("");
@@ -258,10 +283,10 @@ const Auth = () => {
 
   const handleNextStep = () => {
     if (currentStep === 1) {
-      if (!businessName || !businessSlug || !businessCategory) {
+      if (!businessName || !businessSlug || !businessCategory || !businessEmail) {
         toast({
           title: "Error",
-          description: "Please fill in all business information fields",
+          description: "Please fill in all required business information fields",
           variant: "destructive",
         });
         return;
@@ -273,7 +298,7 @@ const Auth = () => {
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!ownerName || !ownerEmail || !ownerPassword) {
+    if (!businessName || !businessSlug || !businessCategory || !businessEmail || !ownerName || !ownerEmail || !ownerPassword) {
       toast({
         title: "Error",
         description: "Please fill in all required fields",
@@ -322,9 +347,6 @@ const Auth = () => {
           transition={{ duration: 0.8 }}
           className="space-y-4"
         >
-          <div className="w-20 h-20 mx-auto bg-gradient-to-br from-primary to-accent rounded-full flex items-center justify-center neural-glow">
-            <Bot className="h-10 w-10 text-white" />
-          </div>
           <h1 className="text-4xl font-bold bg-gradient-to-r from-primary via-accent to-secondary bg-clip-text text-transparent">
             X-SevenAI
           </h1>
@@ -344,7 +366,7 @@ const Auth = () => {
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ delay: 6 }}
+          transition={{ delay: 5 }}
           className="space-y-4"
         >
           <h3 className="text-xl font-semibold text-center text-foreground mb-6">
@@ -370,7 +392,7 @@ const Auth = () => {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 7 }}
+          transition={{ delay: 6 }}
           className="space-y-4"
         >
           <div className="flex items-center justify-center gap-6 text-sm text-muted-foreground">
@@ -504,16 +526,30 @@ const Auth = () => {
                   </div>
 
                   <div className="space-y-4">
-                    <div>
-                      <Label htmlFor="business-name">Business Name *</Label>
-                      <Input
-                        id="business-name"
-                        value={businessName}
-                        onChange={(e) => setBusinessName(e.target.value)}
-                        placeholder="Your Company Inc."
-                        className="neural-input"
-                        required
-                      />
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <Label htmlFor="business-name">Business Name *</Label>
+                        <Input
+                          id="business-name"
+                          value={businessName}
+                          onChange={(e) => setBusinessName(e.target.value)}
+                          placeholder="Your Company Inc."
+                          className="neural-input"
+                          required
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="business-email">Business Email *</Label>
+                        <Input
+                          id="business-email"
+                          type="email"
+                          value={businessEmail}
+                          onChange={(e) => setBusinessEmail(e.target.value)}
+                          placeholder="contact@company.com"
+                          className="neural-input"
+                          required
+                        />
+                      </div>
                     </div>
 
                     <div>
@@ -525,30 +561,59 @@ const Auth = () => {
                           </span>
                         )}
                       </Label>
-                      <div className="flex">
-                        <span className="inline-flex items-center px-3 rounded-l-md border border-r-0 border-input bg-muted text-muted-foreground text-sm">
-                          app.x-sevenai.com/
-                        </span>
+                      <Input
+                        id="business-slug"
+                        value={businessSlug}
+                        onChange={(e) => handleSlugChange(e.target.value)}
+                        placeholder="your-business-name"
+                        className="neural-input"
+                        required
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <Label htmlFor="business-address">Business Address</Label>
                         <Input
-                          id="business-slug"
-                          value={businessSlug}
-                          onChange={(e) => handleSlugChange(e.target.value)}
-                          placeholder="your-business"
-                          className="neural-input rounded-l-none"
-                          required
+                          id="business-address"
+                          value={businessAddress}
+                          onChange={(e) => setBusinessAddress(e.target.value)}
+                          placeholder="123 Business St, City, State"
+                          className="neural-input"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="business-location">Location/City</Label>
+                        <Input
+                          id="business-location"
+                          value={businessLocation}
+                          onChange={(e) => setBusinessLocation(e.target.value)}
+                          placeholder="New York, NY"
+                          className="neural-input"
                         />
                       </div>
                     </div>
 
                     <div>
+                      <Label htmlFor="google-business">Google My Business Link</Label>
+                      <Input
+                        id="google-business"
+                        value={googleBusinessLink}
+                        onChange={(e) => setGoogleBusinessLink(e.target.value)}
+                        placeholder="https://goo.gl/maps/..."
+                        className="neural-input"
+                      />
+                    </div>
+
+                    <div>
                       <Label htmlFor="business-category">Business Category *</Label>
                       <Select value={businessCategory} onValueChange={setBusinessCategory}>
-                        <SelectTrigger className="neural-input">
+                        <SelectTrigger className="neural-input bg-background border border-input">
                           <SelectValue placeholder="Select your business category" />
                         </SelectTrigger>
-                        <SelectContent>
+                        <SelectContent className="bg-background border border-input z-50">
                           {businessCategories.map((category) => (
-                            <SelectItem key={category.value} value={category.value}>
+                            <SelectItem key={category.value} value={category.value} className="bg-background hover:bg-accent/10">
                               <div className="flex items-center gap-3">
                                 <span>{category.icon}</span>
                                 <div>
