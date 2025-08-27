@@ -89,7 +89,7 @@ const Navigation = () => {
               <Button 
                 className="w-full neural-button"
                 onClick={() => {
-                  window.location.href = '/auth';
+                  window.location.href = '/auth#signup';
                   setIsOpen(false);
                 }}
               >
