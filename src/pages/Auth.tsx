@@ -9,30 +9,164 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
 
-const WordTypewriter = ({ text, delay = 0 }: { text: string; delay?: number }) => {
-  const [displayText, setDisplayText] = useState("");
-  const [currentWordIndex, setCurrentWordIndex] = useState(0);
-  
-  const words = text.split(' ');
+const NeuralBrainAnimation = () => {
+  const [animationPhase, setAnimationPhase] = useState(0);
 
   useEffect(() => {
-    const timeout = setTimeout(() => {
-      if (currentWordIndex < words.length) {
-        setDisplayText(words.slice(0, currentWordIndex + 1).join(' '));
-        setCurrentWordIndex(currentWordIndex + 1);
-      }
-    }, delay + 150); // Fast word-by-word typing
-
-    return () => clearTimeout(timeout);
-  }, [currentWordIndex, words, delay]);
+    const timer1 = setTimeout(() => setAnimationPhase(1), 1000);
+    const timer2 = setTimeout(() => setAnimationPhase(2), 3000);
+    const timer3 = setTimeout(() => setAnimationPhase(3), 5000);
+    
+    return () => {
+      clearTimeout(timer1);
+      clearTimeout(timer2);
+      clearTimeout(timer3);
+    };
+  }, []);
 
   return (
-    <span className="inline-block">
-      {displayText}
-      {currentWordIndex < words.length && (
-        <span className="animate-pulse ml-1">|</span>
+    <div className="relative w-80 h-80 mx-auto">
+      {/* Dropping Circles */}
+      {animationPhase >= 1 && (
+        <>
+          {[...Array(12)].map((_, i) => (
+            <motion.div
+              key={`circle-${i}`}
+              className="absolute w-3 h-3 bg-gradient-to-br from-primary to-accent rounded-full"
+              initial={{ 
+                x: Math.random() * 300,
+                y: -20,
+                opacity: 0.8,
+                scale: 0.5
+              }}
+              animate={{ 
+                y: 150 + Math.random() * 100,
+                x: 120 + (i - 6) * 20 + Math.random() * 40,
+                scale: 1,
+                opacity: animationPhase >= 2 ? 0.3 : 0.8
+              }}
+              transition={{ 
+                duration: 2,
+                delay: i * 0.1,
+                ease: "easeOut"
+              }}
+            />
+          ))}
+        </>
       )}
-    </span>
+
+      {/* Neural Network Formation */}
+      {animationPhase >= 2 && (
+        <motion.div
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 1.5 }}
+          className="absolute inset-0"
+        >
+          {/* Central Brain Core */}
+          <motion.div
+            className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-16 h-16 bg-gradient-to-br from-primary via-accent to-secondary rounded-full neural-glow"
+            animate={{ 
+              scale: [1, 1.1, 1],
+              opacity: [0.8, 1, 0.8]
+            }}
+            transition={{ 
+              duration: 2,
+              repeat: Infinity,
+              ease: "easeInOut"
+            }}
+          />
+
+          {/* Neural Nodes */}
+          {[...Array(8)].map((_, i) => {
+            const angle = (i * 45) * (Math.PI / 180);
+            const radius = 80;
+            const x = Math.cos(angle) * radius;
+            const y = Math.sin(angle) * radius;
+            
+            return (
+              <motion.div
+                key={`node-${i}`}
+                className="absolute w-4 h-4 bg-gradient-to-br from-accent to-primary rounded-full"
+                style={{
+                  left: `calc(50% + ${x}px)`,
+                  top: `calc(50% + ${y}px)`,
+                  transform: 'translate(-50%, -50%)'
+                }}
+                animate={{ 
+                  scale: [0.8, 1.2, 0.8],
+                  opacity: [0.6, 1, 0.6]
+                }}
+                transition={{ 
+                  duration: 1.5,
+                  repeat: Infinity,
+                  delay: i * 0.2,
+                  ease: "easeInOut"
+                }}
+              />
+            );
+          })}
+
+          {/* Connecting Lines */}
+          <svg className="absolute inset-0 w-full h-full">
+            {[...Array(8)].map((_, i) => {
+              const angle = (i * 45) * (Math.PI / 180);
+              const radius = 80;
+              const x = 160 + Math.cos(angle) * radius;
+              const y = 160 + Math.sin(angle) * radius;
+              
+              return (
+                <motion.line
+                  key={`line-${i}`}
+                  x1="160"
+                  y1="160"
+                  x2={x}
+                  y2={y}
+                  stroke="url(#gradient)"
+                  strokeWidth="1"
+                  initial={{ pathLength: 0, opacity: 0 }}
+                  animate={{ pathLength: 1, opacity: 0.6 }}
+                  transition={{ 
+                    duration: 1,
+                    delay: 0.5 + i * 0.1,
+                    ease: "easeInOut"
+                  }}
+                />
+              );
+            })}
+            <defs>
+              <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity="0.8" />
+                <stop offset="100%" stopColor="hsl(var(--accent))" stopOpacity="0.3" />
+              </linearGradient>
+            </defs>
+          </svg>
+
+          {/* Neural Pulses */}
+          {animationPhase >= 3 && (
+            <>
+              {[...Array(4)].map((_, i) => (
+                <motion.div
+                  key={`pulse-${i}`}
+                  className="absolute top-1/2 left-1/2 w-32 h-32 border border-primary/30 rounded-full"
+                  style={{ transform: 'translate(-50%, -50%)' }}
+                  animate={{ 
+                    scale: [0, 2],
+                    opacity: [0.8, 0]
+                  }}
+                  transition={{ 
+                    duration: 3,
+                    repeat: Infinity,
+                    delay: i * 0.75,
+                    ease: "easeOut"
+                  }}
+                />
+              ))}
+            </>
+          )}
+        </motion.div>
+      )}
+    </div>
   );
 };
 
@@ -196,54 +330,47 @@ const Auth = () => {
           </h1>
         </motion.div>
 
-        {/* Typewriter Headlines */}
-        <div className="space-y-4 text-left">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 1 }}
-            className="space-y-2"
-          >
-            <h2 className="text-2xl font-semibold text-foreground">
-              <WordTypewriter text="Transform Your Business With Enterprise-Grade AI Automation Platform" delay={500} />
-            </h2>
-          </motion.div>
+        {/* Neural Brain Animation */}
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.8 }}
+          className="flex justify-center items-center"
+        >
+          <NeuralBrainAnimation />
+        </motion.div>
 
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 3 }}
-            className="space-y-4"
-          >
-            <div className="flex items-start gap-3">
-              <div className="w-2 h-2 rounded-full bg-primary mt-2 neural-glow"></div>
-              <div>
-                <h3 className="font-semibold text-foreground">Intelligent Workflow Automation</h3>
-                <p className="text-sm text-muted-foreground">Streamline operations with AI-powered process optimization</p>
-              </div>
+        {/* Key Features */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 6 }}
+          className="space-y-4"
+        >
+          <h3 className="text-xl font-semibold text-center text-foreground mb-6">
+            Enterprise AI Automation
+          </h3>
+          <div className="space-y-3">
+            <div className="flex items-center gap-3 justify-center">
+              <div className="w-2 h-2 rounded-full bg-primary neural-glow"></div>
+              <span className="text-sm text-muted-foreground">Intelligent Workflow Automation</span>
             </div>
-            <div className="flex items-start gap-3">
-              <div className="w-2 h-2 rounded-full bg-accent mt-2 neural-glow"></div>
-              <div>
-                <h3 className="font-semibold text-foreground">Advanced Customer Intelligence</h3>
-                <p className="text-sm text-muted-foreground">Predict customer behavior and personalize experiences</p>
-              </div>
+            <div className="flex items-center gap-3 justify-center">
+              <div className="w-2 h-2 rounded-full bg-accent neural-glow"></div>
+              <span className="text-sm text-muted-foreground">Advanced Customer Intelligence</span>
             </div>
-            <div className="flex items-start gap-3">
-              <div className="w-2 h-2 rounded-full bg-secondary mt-2 neural-glow"></div>
-              <div>
-                <h3 className="font-semibold text-foreground">Enterprise Security & Compliance</h3>
-                <p className="text-sm text-muted-foreground">Bank-level security with full regulatory compliance</p>
-              </div>
+            <div className="flex items-center gap-3 justify-center">
+              <div className="w-2 h-2 rounded-full bg-secondary neural-glow"></div>
+              <span className="text-sm text-muted-foreground">Enterprise Security & Compliance</span>
             </div>
-          </motion.div>
-        </div>
+          </div>
+        </motion.div>
 
         {/* Trust Indicators */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 4 }}
+          transition={{ delay: 7 }}
           className="space-y-4"
         >
           <div className="flex items-center justify-center gap-6 text-sm text-muted-foreground">
