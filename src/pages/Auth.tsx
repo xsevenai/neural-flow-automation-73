@@ -517,8 +517,8 @@ const Auth = () => {
   };
 
   const LeftSide = () => (
-    <div className="w-full relative flex flex-col justify-center items-center p-12 bg-gradient-to-br from-primary/5 to-accent/5">
-      <div className="absolute inset-0 bg-gradient-to-br from-background/90 to-surface-dark/90"></div>
+    <div className="w-full relative flex flex-col justify-center items-center p-12 bg-gradient-to-br from-primary/8 to-accent/8">
+      <div className="absolute inset-0 bg-gradient-to-br from-background/95 to-surface-dark/90 backdrop-blur-sm"></div>
       <div className="relative z-10 max-w-lg text-center space-y-6">
         {/* Logo and Brand */}
         <motion.div
@@ -553,9 +553,9 @@ const Auth = () => {
   );
 
   return (
-    <div className="min-h-screen flex relative">
+    <div className="min-h-screen flex relative bg-background">
       {/* Neural background */}
-      <div className="absolute inset-0 opacity-5">
+      <div className="absolute inset-0 opacity-8 dark:opacity-5">
         <div className="neural-grid"></div>
       </div>
 
@@ -691,12 +691,12 @@ const Auth = () => {
                     <div>
                       <Label htmlFor="business-type">Business Type *</Label>
                       <Select value={businessType} onValueChange={setBusinessType}>
-                        <SelectTrigger className="neural-input bg-background border border-input">
+                        <SelectTrigger className="neural-input bg-card border border-border">
                           <SelectValue placeholder="Select your business type" />
                         </SelectTrigger>
-                        <SelectContent className="bg-background border border-input z-50">
+                        <SelectContent className="bg-card border border-border z-50 backdrop-blur-lg">
                           {businessTypes.map((type) => (
-                            <SelectItem key={type.value} value={type.value} className="bg-background hover:bg-accent/10">
+                            <SelectItem key={type.value} value={type.value} className="bg-card hover:bg-accent/10 text-card-foreground">
                               {type.label}
                             </SelectItem>
                           ))}

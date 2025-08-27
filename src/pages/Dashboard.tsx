@@ -354,19 +354,19 @@ const Dashboard = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-slate-900 flex items-center justify-center">
-        <div className="text-white">Loading...</div>
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-foreground neural-pulse">Loading...</div>
       </div>
     );
   }
 
   if (!businessProfile) {
     return (
-      <div className="min-h-screen bg-slate-900 flex items-center justify-center">
+      <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
-          <h2 className="text-white text-xl mb-4">No Business Profile Found</h2>
-          <p className="text-slate-400 mb-6">You need to create a business profile first.</p>
-          <Button onClick={() => navigate('/auth')}>Go to Setup</Button>
+          <h2 className="text-foreground text-xl mb-4">No Business Profile Found</h2>
+          <p className="text-muted-foreground mb-6">You need to create a business profile first.</p>
+          <Button onClick={() => navigate('/auth')} className="neural-button">Go to Setup</Button>
         </div>
       </div>
     );
@@ -420,56 +420,56 @@ const Dashboard = () => {
         return (
           <div className="space-y-6 h-full overflow-y-auto">
             <div>
-              <h1 className="text-2xl font-bold text-white mb-2">Working Hours</h1>
-              <p className="text-slate-400 mb-6">Configure weekly open/close times</p>
+              <h1 className="text-2xl font-bold text-foreground mb-2">Working Hours</h1>
+              <p className="text-muted-foreground mb-6">Configure weekly open/close times</p>
             </div>
 
-            <Card className="bg-slate-700 border-slate-600">
+            <Card className="neural-card border-border">
               <CardContent className="p-6">
                 <div className="space-y-4 max-h-96 overflow-y-auto">
                   {hoursDisplay.map(({ day, isOpen, openTime, closeTime }) => (
                     <div key={day} className="flex items-center justify-between py-3">
                       <div className="w-16">
-                        <span className="text-white font-medium capitalize">{day}</span>
+                        <span className="text-foreground font-medium capitalize">{day}</span>
                       </div>
                       <div className="flex items-center gap-4">
                         <Switch
                           checked={isOpen}
                           onCheckedChange={(checked) => updateWorkingHour(day, 'is_open', checked)}
-                          className="data-[state=checked]:bg-emerald-600"
+                          className="data-[state=checked]:bg-primary"
                         />
-                        <span className="text-slate-300 w-12 text-sm">
+                        <span className="text-muted-foreground w-12 text-sm">
                           {isOpen ? 'Open' : 'Closed'}
                         </span>
                         <Input
                           type="time"
                           value={isOpen ? openTime : ''}
                           disabled={!isOpen}
-                          className="w-24 bg-slate-600 border-slate-500 text-white"
+                          className="w-24 neural-input"
                           onChange={(e) => updateWorkingHour(day, 'open_time', e.target.value)}
                         />
-                        <span className="text-slate-400">to</span>
+                        <span className="text-muted-foreground">to</span>
                         <Input
                           type="time"
                           value={isOpen ? closeTime : ''}
                           disabled={!isOpen}
-                          className="w-24 bg-slate-600 border-slate-500 text-white"
+                          className="w-24 neural-input"
                           onChange={(e) => updateWorkingHour(day, 'close_time', e.target.value)}
                         />
                       </div>
                     </div>
                   ))}
                 </div>
-                <div className="flex gap-3 mt-6 pt-4 border-t border-slate-600">
+                <div className="flex gap-3 mt-6 pt-4 border-t border-border">
                   <Button 
                     variant="outline" 
-                    className="bg-slate-600 border-slate-500 text-white hover:bg-slate-500"
+                    className="neural-outline-button"
                     onClick={() => setWorkingHours([])}
                   >
                     Reset
                   </Button>
                   <Button 
-                    className="bg-emerald-600 hover:bg-emerald-700 text-white"
+                    className="neural-button"
                     onClick={saveWorkingHours}
                   >
                     ✓ Save Changes
@@ -484,26 +484,26 @@ const Dashboard = () => {
         return (
           <div className="space-y-6 h-full overflow-y-auto">
             <div>
-              <h1 className="text-2xl font-bold text-white mb-2">Table Management</h1>
-              <p className="text-slate-400 mb-6">Manage restaurant tables and generate QR codes</p>
+              <h1 className="text-2xl font-bold text-foreground mb-2">Table Management</h1>
+              <p className="text-muted-foreground mb-6">Manage restaurant tables and generate QR codes</p>
             </div>
 
-            <Card className="bg-slate-700 border-slate-600">
+            <Card className="neural-card border-border">
               <CardContent className="p-6">
                 <div className="mb-6">
-                  <h3 className="text-white font-medium mb-4">Restaurant Tables ({tables.length})</h3>
+                  <h3 className="text-foreground font-medium mb-4">Restaurant Tables ({tables.length})</h3>
                   <div className="grid grid-cols-6 gap-4 max-h-64 overflow-y-auto">
                     {tables.map((table) => (
-                      <div key={table.id} className="bg-slate-600 rounded-lg p-4 text-center border border-slate-500">
-                        <div className="text-white font-medium mb-1">{table.table_number}</div>
-                        <div className="text-emerald-400 text-sm">Seats {table.capacity}</div>
-                        <div className="text-slate-400 text-xs mt-1">Available</div>
+                      <div key={table.id} className="neural-card rounded-lg p-4 text-center border border-border">
+                        <div className="text-foreground font-medium mb-1">{table.table_number}</div>
+                        <div className="text-primary text-sm">Seats {table.capacity}</div>
+                        <div className="text-muted-foreground text-xs mt-1">Available</div>
                       </div>
                     ))}
                   </div>
                 </div>
                 <Button 
-                  className="bg-emerald-600 hover:bg-emerald-700 text-white"
+                  className="neural-button"
                   onClick={generateQRCodes}
                 >
                   🔗 Generate QR Codes
@@ -517,24 +517,24 @@ const Dashboard = () => {
         return (
           <div className="space-y-6 h-full overflow-y-auto">
             <div>
-              <h1 className="text-2xl font-bold text-white mb-2">Menu Management</h1>
-              <p className="text-slate-400 mb-6">Manage menu categories and items</p>
+              <h1 className="text-2xl font-bold text-foreground mb-2">Menu Management</h1>
+              <p className="text-muted-foreground mb-6">Manage menu categories and items</p>
             </div>
 
-            <Card className="bg-slate-700 border-slate-600">
+            <Card className="neural-card border-border">
               <CardContent className="p-6">
                 <div className="mb-6">
-                  <h3 className="text-white font-medium mb-4">Menu Categories</h3>
+                  <h3 className="text-foreground font-medium mb-4">Menu Categories</h3>
                   <div className="flex gap-2 mb-4">
                     <Input
                       placeholder="Enter category name"
                       value={newCategoryName}
                       onChange={(e) => setNewCategoryName(e.target.value)}
-                      className="bg-slate-600 border-slate-500 text-white"
+                      className="neural-input"
                     />
                     <Button 
                       onClick={addMenuCategory}
-                      className="bg-emerald-600 hover:bg-emerald-700"
+                      className="neural-button"
                     >
                       <Plus className="h-4 w-4 mr-1" />
                       Add
@@ -544,25 +544,25 @@ const Dashboard = () => {
                   {menuCategories.length > 0 ? (
                     <div className="space-y-2">
                       {menuCategories.map((category) => (
-                        <div key={category.id} className="flex items-center justify-between bg-slate-600 rounded-lg p-3">
+                        <div key={category.id} className="flex items-center justify-between neural-card rounded-lg p-3">
                           <div>
-                            <span className="text-white font-medium">{category.name}</span>
+                            <span className="text-foreground font-medium">{category.name}</span>
                             {category.description && (
-                              <p className="text-slate-400 text-sm">{category.description}</p>
+                              <p className="text-muted-foreground text-sm">{category.description}</p>
                             )}
                           </div>
                           <div className="flex gap-2">
                             <Button
                               variant="ghost"
                               size="icon"
-                              className="text-slate-300 hover:text-white"
+                              className="text-muted-foreground hover:text-foreground"
                             >
                               <Edit className="h-4 w-4" />
                             </Button>
                             <Button
                               variant="ghost"
                               size="icon"
-                              className="text-red-400 hover:text-red-300"
+                              className="text-destructive hover:text-destructive/80"
                               onClick={() => deleteMenuCategory(category.id)}
                             >
                               <Trash2 className="h-4 w-4" />
@@ -572,7 +572,7 @@ const Dashboard = () => {
                       ))}
                     </div>
                   ) : (
-                    <div className="text-slate-300 text-center py-8">
+                    <div className="text-muted-foreground text-center py-8">
                       No categories added yet. Add your first category to get started.
                     </div>
                   )}
@@ -586,14 +586,14 @@ const Dashboard = () => {
         return (
           <div className="space-y-6 h-full overflow-y-auto">
             <div>
-              <h1 className="text-2xl font-bold text-white mb-2">AI Assistant</h1>
-              <p className="text-slate-400 mb-6">Get help managing your restaurant business</p>
+              <h1 className="text-2xl font-bold text-foreground mb-2">AI Assistant</h1>
+              <p className="text-muted-foreground mb-6">Get help managing your restaurant business</p>
             </div>
 
-            <Card className="bg-slate-700 border-slate-600 flex-1">
+            <Card className="neural-card border-border flex-1">
               <CardContent className="p-0 h-full flex flex-col">
                 <div className="flex-1 p-6">
-                  <div className="text-slate-300 text-center">
+                  <div className="text-muted-foreground text-center">
                     AI chat feature coming soon. This will help you with:
                     <ul className="mt-4 space-y-2 text-left max-w-md mx-auto">
                       <li>• Menu optimization suggestions</li>
@@ -603,18 +603,18 @@ const Dashboard = () => {
                     </ul>
                   </div>
                 </div>
-                <div className="p-4 border-t border-slate-600">
+                <div className="p-4 border-t border-border">
                   <div className="flex gap-2">
                     <Textarea
                       placeholder="Type a message to your AI assistant..."
                       value={chatMessage}
                       onChange={(e) => setChatMessage(e.target.value)}
-                      className="bg-slate-600 border-slate-500 text-white resize-none"
+                      className="neural-input resize-none"
                       rows={1}
                       disabled
                     />
                     <Button 
-                      className="bg-emerald-600 hover:bg-emerald-700"
+                      className="neural-button"
                       disabled
                     >
                       ➤
@@ -634,68 +634,68 @@ const Dashboard = () => {
         return (
           <div className="space-y-6 h-full overflow-y-auto">
             <div>
-              <h1 className="text-2xl font-bold text-white mb-2">Dashboard Overview</h1>
-              <p className="text-slate-400 mb-6">Welcome back to {businessProfile.business_name}</p>
+              <h1 className="text-2xl font-bold text-foreground mb-2">Dashboard Overview</h1>
+              <p className="text-muted-foreground mb-6">Welcome back to {businessProfile.business_name}</p>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              <Card className="bg-slate-700 border-slate-600">
+              <Card className="neural-card border-border">
                 <CardHeader>
-                  <CardTitle className="text-white flex items-center gap-2">
-                    <ShoppingCart className="h-5 w-5 text-emerald-400" />
+                  <CardTitle className="text-foreground flex items-center gap-2">
+                    <ShoppingCart className="h-5 w-5 text-primary" />
                     Orders Today
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-3xl font-bold text-white">{todayOrders.length}</div>
-                  <p className="text-emerald-400 text-sm">
+                  <div className="text-3xl font-bold text-foreground">{todayOrders.length}</div>
+                  <p className="text-primary text-sm">
                     {todayOrders.filter(o => o.status === 'pending').length} pending
                   </p>
                 </CardContent>
               </Card>
 
-              <Card className="bg-slate-700 border-slate-600">
+              <Card className="neural-card border-border">
                 <CardHeader>
-                  <CardTitle className="text-white flex items-center gap-2">
-                    <LayoutGrid className="h-5 w-5 text-blue-400" />
+                  <CardTitle className="text-foreground flex items-center gap-2">
+                    <LayoutGrid className="h-5 w-5 text-accent" />
                     Tables
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-3xl font-bold text-white">{activeTables}/{totalTables}</div>
-                  <p className="text-blue-400 text-sm">{occupancyRate}% capacity</p>
+                  <div className="text-3xl font-bold text-foreground">{activeTables}/{totalTables}</div>
+                  <p className="text-accent text-sm">{occupancyRate}% capacity</p>
                 </CardContent>
               </Card>
 
-              <Card className="bg-slate-700 border-slate-600">
+              <Card className="neural-card border-border">
                 <CardHeader>
-                  <CardTitle className="text-white flex items-center gap-2">
-                    <UtensilsCrossed className="h-5 w-5 text-yellow-400" />
+                  <CardTitle className="text-foreground flex items-center gap-2">
+                    <UtensilsCrossed className="h-5 w-5 text-neural-violet" />
                     Menu Items
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-3xl font-bold text-white">{menuItems.length}</div>
-                  <p className="text-yellow-400 text-sm">
+                  <div className="text-3xl font-bold text-foreground">{menuItems.length}</div>
+                  <p className="text-neural-violet text-sm">
                     {menuItems.filter(item => item.is_available).length} available
                   </p>
                 </CardContent>
               </Card>
             </div>
 
-            <Card className="bg-slate-700 border-slate-600">
+            <Card className="neural-card border-border">
               <CardHeader>
-                <CardTitle className="text-white">Recent Orders</CardTitle>
+                <CardTitle className="text-foreground">Recent Orders</CardTitle>
               </CardHeader>
               <CardContent>
                 {orders.slice(0, 5).length > 0 ? (
                   <div className="space-y-3">
                     {orders.slice(0, 5).map((order) => (
-                      <div key={order.id} className="flex items-center justify-between bg-slate-600 rounded-lg p-3">
+                      <div key={order.id} className="flex items-center justify-between neural-card rounded-lg p-3">
                         <div>
-                          <span className="text-white font-medium">#{order.order_number}</span>
+                          <span className="text-foreground font-medium">#{order.order_number}</span>
                           {order.customer_name && (
-                            <p className="text-slate-400 text-sm">{order.customer_name}</p>
+                            <p className="text-muted-foreground text-sm">{order.customer_name}</p>
                           )}
                         </div>
                         <div className="text-right">
@@ -706,13 +706,13 @@ const Dashboard = () => {
                           }>
                             {order.status}
                           </Badge>
-                          <p className="text-slate-300 text-sm">${order.total_amount}</p>
+                          <p className="text-foreground text-sm">${order.total_amount}</p>
                         </div>
                       </div>
                     ))}
                   </div>
                 ) : (
-                  <div className="text-slate-300 text-center py-8">
+                  <div className="text-muted-foreground text-center py-8">
                     No orders yet. Orders will appear here once customers start placing them.
                   </div>
                 )}
@@ -724,25 +724,25 @@ const Dashboard = () => {
   };
 
   return (
-    <div className="h-screen w-full bg-slate-900 p-4 overflow-hidden">
+    <div className="h-screen w-full bg-background p-4 overflow-hidden">
       <div className="grid grid-cols-12 gap-4 h-full">
         
         {/* Left Panel - Navigation */}
         <div className="col-span-3 h-full">
-          <div className="bg-slate-800 rounded-xl border border-slate-700 h-full overflow-hidden flex flex-col">
-            <div className="p-4 border-b border-slate-700 flex-shrink-0">
+          <div className="neural-card border-border h-full overflow-hidden flex flex-col">
+            <div className="p-4 border-b border-border flex-shrink-0">
               <div className="flex items-center justify-between">
-                <h1 className="text-white text-xl font-semibold">{businessProfile.business_name}</h1>
+                <h1 className="text-foreground text-xl font-semibold">{businessProfile.business_name}</h1>
                 <Button
                   variant="ghost"
                   size="icon"
                   onClick={handleLogout}
-                  className="text-slate-300 hover:text-white"
+                  className="text-muted-foreground hover:text-foreground"
                 >
                   <LogOut className="h-4 w-4" />
                 </Button>
               </div>
-              <p className="text-slate-400 text-sm">{businessProfile.business_type}</p>
+              <p className="text-muted-foreground text-sm">{businessProfile.business_type}</p>
             </div>
             
             <div className="flex-1 p-3 overflow-y-auto">
@@ -752,22 +752,22 @@ const Dashboard = () => {
                     <div 
                       className={`w-full rounded-lg p-3 transition-all duration-200 cursor-pointer ${
                         isActive(item.section) 
-                          ? 'bg-slate-700 text-white border border-slate-600' 
-                          : 'text-slate-300 hover:bg-slate-700 hover:text-white'
+                          ? 'neural-card border-primary/30 text-foreground' 
+                          : 'text-muted-foreground hover:bg-accent/10 hover:text-foreground'
                       }`}
                       onClick={() => setActiveSection(item.section)}
                     >
                       <div className="flex items-start gap-3">
                         <item.icon className={`h-5 w-5 mt-0.5 ${
-                          item.section === 'dashboard' ? 'text-emerald-400' :
-                          item.section === 'chat' ? 'text-cyan-400' :
-                          item.section === 'menu-management' ? 'text-emerald-400' :
-                          item.section === 'table-management' ? 'text-blue-400' :
-                          'text-yellow-400'
+                          item.section === 'dashboard' ? 'text-primary' :
+                          item.section === 'chat' ? 'text-neural-cyan' :
+                          item.section === 'menu-management' ? 'text-primary' :
+                          item.section === 'table-management' ? 'text-accent' :
+                          'text-neural-violet'
                         }`} />
                         <div className="flex-1 min-w-0">
                           <div className="font-medium text-sm">{item.title}</div>
-                          <div className="text-xs text-slate-400 mt-1 leading-tight">{item.subtitle}</div>
+                          <div className="text-xs text-muted-foreground mt-1 leading-tight">{item.subtitle}</div>
                         </div>
                       </div>
                     </div>
@@ -780,24 +780,24 @@ const Dashboard = () => {
 
         {/* Center Panel - Main Content */}
         <div className="col-span-6 h-full">
-          <div className="bg-slate-800 rounded-xl border border-slate-700 h-full overflow-hidden flex flex-col">
+          <div className="neural-card border-border h-full overflow-hidden flex flex-col">
             {/* Top Header */}
-            <div className="bg-slate-800 border-b border-slate-700 p-4 flex-shrink-0">
+            <div className="border-b border-border p-4 flex-shrink-0">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <div className="w-2 h-2 bg-emerald-400 rounded-full"></div>
-                  <span className="text-white font-medium capitalize">{activeSection.replace('-', ' ')}</span>
+                  <div className="w-2 h-2 bg-primary rounded-full neural-pulse"></div>
+                  <span className="text-foreground font-medium capitalize">{activeSection.replace('-', ' ')}</span>
                 </div>
                 
                 <div className="flex items-center gap-4">
-                  <Button variant="ghost" size="icon" className="text-slate-300 hover:text-white">
+                  <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-foreground">
                     <BarChart3 className="h-5 w-5" />
                   </Button>
-                  <Button variant="ghost" size="icon" className="text-slate-300 hover:text-white">
+                  <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-foreground">
                     <Settings className="h-5 w-5" />
                   </Button>
-                  <div className="w-8 h-8 bg-slate-700 rounded-full flex items-center justify-center">
-                    <span className="text-white text-sm font-medium">
+                  <div className="w-8 h-8 bg-accent rounded-full flex items-center justify-center">
+                    <span className="text-accent-foreground text-sm font-medium">
                       {user?.email?.charAt(0).toUpperCase()}
                     </span>
                   </div>
@@ -814,30 +814,30 @@ const Dashboard = () => {
 
         {/* Right Panel - Live & Notifications */}
         <div className="col-span-3 h-full">
-          <div className="bg-slate-800 rounded-xl border border-slate-700 h-full overflow-hidden flex flex-col">
+          <div className="neural-card border-border h-full overflow-hidden flex flex-col">
             <div className="p-6 flex-1 overflow-y-auto">
               <div className="space-y-6">
                 <div className="flex items-center justify-between">
-                  <h2 className="text-white font-medium">Quick Actions</h2>
+                  <h2 className="text-foreground font-medium">Quick Actions</h2>
                 </div>
 
                 <div className="space-y-4">
                   <Button 
-                    className="w-full bg-slate-700 border border-slate-600 text-white hover:bg-slate-600 justify-start"
+                    className="w-full neural-outline-button justify-start"
                     onClick={() => setActiveSection('table-management')}
                   >
                     <LayoutGrid className="h-4 w-4 mr-2" />
                     Manage Tables
                   </Button>
                   <Button 
-                    className="w-full bg-slate-700 border border-slate-600 text-white hover:bg-slate-600 justify-start"
+                    className="w-full neural-outline-button justify-start"
                     onClick={() => setActiveSection('menu-management')}
                   >
                     <UtensilsCrossed className="h-4 w-4 mr-2" />
                     Manage Menu
                   </Button>
                   <Button 
-                    className="w-full bg-slate-700 border border-slate-600 text-white hover:bg-slate-600 justify-start"
+                    className="w-full neural-outline-button justify-start"
                     onClick={() => setActiveSection('hours')}
                   >
                     <Clock className="h-4 w-4 mr-2" />
@@ -845,25 +845,25 @@ const Dashboard = () => {
                   </Button>
                 </div>
 
-                <div className="border-t border-slate-700 pt-6">
-                  <h3 className="text-white font-medium mb-4">Business Stats</h3>
+                <div className="border-t border-border pt-6">
+                  <h3 className="text-foreground font-medium mb-4">Business Stats</h3>
                   <div className="space-y-3">
-                    <div className="bg-slate-700 rounded-lg p-3">
+                    <div className="neural-card rounded-lg p-3">
                       <div className="flex items-center justify-between">
-                        <span className="text-slate-300 text-sm">Categories</span>
-                        <span className="text-white font-medium">{menuCategories.length}</span>
+                        <span className="text-muted-foreground text-sm">Categories</span>
+                        <span className="text-foreground font-medium">{menuCategories.length}</span>
                       </div>
                     </div>
-                    <div className="bg-slate-700 rounded-lg p-3">
+                    <div className="neural-card rounded-lg p-3">
                       <div className="flex items-center justify-between">
-                        <span className="text-slate-300 text-sm">Menu Items</span>
-                        <span className="text-white font-medium">{menuItems.length}</span>
+                        <span className="text-muted-foreground text-sm">Menu Items</span>
+                        <span className="text-foreground font-medium">{menuItems.length}</span>
                       </div>
                     </div>
-                    <div className="bg-slate-700 rounded-lg p-3">
+                    <div className="neural-card rounded-lg p-3">
                       <div className="flex items-center justify-between">
-                        <span className="text-slate-300 text-sm">Total Orders</span>
-                        <span className="text-white font-medium">{orders.length}</span>
+                        <span className="text-muted-foreground text-sm">Total Orders</span>
+                        <span className="text-foreground font-medium">{orders.length}</span>
                       </div>
                     </div>
                   </div>
