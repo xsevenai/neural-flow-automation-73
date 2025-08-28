@@ -317,26 +317,34 @@ const Auth = () => {
       console.log('📊 Checking business profile for user...');
       
       // Try to get the current session to ensure auth context is available
+      console.log('🔍 Getting current session...');
       const { data: { session }, error: sessionError } = await supabase.auth.getSession();
       
-      if (sessionError || !session) {
-        console.error('❌ No valid session found:', sessionError);
-        throw new Error('Authentication session is invalid');
+      if (sessionError) {
+        console.error('❌ Session error:', sessionError);
+        throw new Error('Authentication session error: ' + sessionError.message);
       }
       
-      console.log('✅ Valid session confirmed');
+      if (!session) {
+        console.error('❌ No session found');
+        throw new Error('No authentication session found');
+      }
+      
+      console.log('✅ Valid session confirmed, user:', session.user.id);
       
       // Now query the business profile with the authenticated context
+      console.log('🔎 Querying business profile...');
       const { data: profile, error: profileError } = await supabase
         .from('businesses')
         .select('*')
         .eq('user_id', user.id)
         .maybeSingle();
 
-      console.log('📋 Profile query result:', { 
+      console.log('📋 Profile query completed:', { 
         hasProfile: !!profile, 
         error: profileError,
-        userId: user.id 
+        userId: user.id,
+        profileData: profile ? { id: profile.id, name: profile.name } : null
       });
 
       if (profileError) {
