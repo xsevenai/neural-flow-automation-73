@@ -316,24 +316,10 @@ const Auth = () => {
       
       console.log('📊 Checking business profile for user...');
       
-      // Try to get the current session to ensure auth context is available
-      console.log('🔍 Getting current session...');
-      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+      // Use the current session state instead of calling getSession again
+      console.log('✅ Using current session data, querying business profile...');
       
-      if (sessionError) {
-        console.error('❌ Session error:', sessionError);
-        throw new Error('Authentication session error: ' + sessionError.message);
-      }
-      
-      if (!session) {
-        console.error('❌ No session found');
-        throw new Error('No authentication session found');
-      }
-      
-      console.log('✅ Valid session confirmed, user:', session.user.id);
-      
-      // Now query the business profile with the authenticated context
-      console.log('🔎 Querying business profile...');
+      // Query the business profile directly - the user is already authenticated
       const { data: profile, error: profileError } = await supabase
         .from('businesses')
         .select('*')
