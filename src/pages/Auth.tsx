@@ -5,14 +5,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
-import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from '@/integrations/supabase/client';
 import { Eye, EyeOff, Loader2, Building, User, ArrowLeft, CheckCircle } from 'lucide-react';
 import type { User as SupabaseUser, Session } from '@supabase/supabase-js';
 import type { Database } from '@/integrations/supabase/types';
 
-// Type alias for cleaner code
 type BusinessRow = Database['public']['Tables']['businesses']['Row'];
 
 const Auth = () => {
@@ -26,9 +24,6 @@ const Auth = () => {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [initializing, setInitializing] = useState(true);
-  const [user, setUser] = useState<SupabaseUser | null>(null);
-  const [session, setSession] = useState<Session | null>(null);
-  const [businessProfile, setBusinessProfile] = useState<BusinessRow | null>(null);
   const [showBusinessForm, setShowBusinessForm] = useState(false);
   const [profileData, setProfileData] = useState({
     phone: '',
@@ -40,142 +35,37 @@ const Auth = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Initialize authentication state
+  // Simple, fast auth check
   useEffect(() => {
-    console.log('🚀 Initializing authentication system...');
+    console.log('🚀 Auth: Quick initialization...');
     
-    let mounted = true;
-    
-    const initAuth = async () => {
+    const quickInit = async () => {
       try {
-        // Set up auth state listener first
-        const { data: { subscription } } = supabase.auth.onAuthStateChange(
-          async (event, session) => {
-            if (!mounted) return;
-            
-            console.log(`🔄 Auth state changed: ${event}`, session?.user?.id || 'no user');
-            
-            if (event === 'SIGNED_IN' && session?.user) {
-              setSession(session);
-              setUser(session.user);
-              await handleAuthenticatedUser(session.user);
-            } else if (event === 'SIGNED_OUT') {
-              setSession(null);
-              setUser(null);
-              setBusinessProfile(null);
-              setShowBusinessForm(false);
-            }
-          }
-        );
-
-        // Check for existing session
-        console.log('🔍 Checking for existing session...');
-        const { data: { session: currentSession } } = await supabase.auth.getSession();
+        // Just check if user is signed in, don't wait for profile
+        const { data: { session } } = await supabase.auth.getSession();
         
-        if (currentSession?.user && mounted) {
-          console.log('✅ Found existing session:', currentSession.user.id);
-          setSession(currentSession);
-          setUser(currentSession.user);
-          await handleAuthenticatedUser(currentSession.user);
+        if (session?.user) {
+          console.log('✅ Auth: User found, redirecting to dashboard...');
+          navigate('/dashboard', { replace: true });
+          return;
         }
-
-        // Check URL hash for login/signup mode
-        const hash = location.hash;
-        console.log('URL hash:', hash);
-        if (hash === '#login') {
-          setIsLogin(true);
-        } else if (hash === '#signup') {
+        
+        console.log('❌ Auth: No session, showing auth form...');
+        
+        // Check URL for mode
+        if (location.hash === '#signup') {
           setIsLogin(false);
         }
-
-        if (mounted) {
-          setInitializing(false);
-        }
-
-        return () => {
-          subscription.unsubscribe();
-        };
+        
       } catch (error) {
-        console.error('❌ Auth initialization error:', error);
-        if (mounted) {
-          setInitializing(false);
-        }
+        console.error('❌ Auth: Init error:', error);
+      } finally {
+        setInitializing(false);
       }
     };
 
-    initAuth();
-
-    return () => {
-      mounted = false;
-    };
-  }, [location.hash]);
-
-  const handleAuthenticatedUser = async (user: SupabaseUser) => {
-    try {
-      console.log('🔐 Processing authenticated user:', user.id);
-      
-      // Check for business profile
-      console.log('📊 Checking business profile...');
-      const { data: profile, error: profileError } = await supabase
-        .from('businesses')
-        .select('*')
-        .eq('user_id', user.id)
-        .maybeSingle();
-
-      console.log('📋 Profile query result:', { 
-        hasProfile: !!profile, 
-        error: profileError,
-        profileName: profile?.name 
-      });
-
-      if (profileError) {
-        console.error('❌ Profile fetch error:', profileError);
-        toast({
-          title: "Database Error",
-          description: "Failed to load your business profile. Please try again.",
-          variant: "destructive",
-        });
-        return;
-      }
-
-      if (profile) {
-        console.log('🏢 Business profile found - redirecting to dashboard');
-        setBusinessProfile(profile);
-        setShowBusinessForm(false);
-        
-        toast({
-          title: "Welcome back!",
-          description: `Successfully logged into ${profile.name}`,
-        });
-        
-        // Add small delay to ensure UI updates before navigation
-        setTimeout(() => {
-          navigate('/dashboard', { replace: true });
-        }, 500);
-      } else {
-        console.log('🏗️ No business profile - showing business creation form');
-        setBusinessProfile(null);
-        setShowBusinessForm(true);
-        
-        // Pre-fill form with user data if needed
-        setProfileData(prev => ({
-          ...prev,
-        }));
-        
-        toast({
-          title: "Complete Your Setup",
-          description: "Please create your business profile to continue.",
-        });
-      }
-    } catch (error) {
-      console.error('❌ Error processing authenticated user:', error);
-      toast({
-        title: "Authentication Error",
-        description: "There was an error setting up your account. Please try again.",
-        variant: "destructive",
-      });
-    }
-  };
+    quickInit();
+  }, [navigate, location.hash]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -191,7 +81,7 @@ const Auth = () => {
     }
 
     setLoading(true);
-    console.log('🔐 Starting login process for:', email);
+    console.log('🔐 Auth: Login attempt for:', email);
 
     try {
       const { data, error } = await supabase.auth.signInWithPassword({
@@ -200,7 +90,7 @@ const Auth = () => {
       });
 
       if (error) {
-        console.error('❌ Login error:', error);
+        console.error('❌ Auth: Login error:', error);
         
         let errorMessage = "Login failed. Please try again.";
         if (error.message.includes('Invalid login credentials')) {
@@ -217,12 +107,18 @@ const Auth = () => {
         return;
       }
 
-      console.log('✅ Login successful for user:', data.user?.id);
+      console.log('✅ Auth: Login successful, redirecting...');
       
-      // The onAuthStateChange listener will handle the rest
+      toast({
+        title: "Welcome Back!",
+        description: "You have been successfully logged in.",
+      });
+      
+      // Direct redirect - let dashboard handle profile check
+      navigate('/dashboard', { replace: true });
       
     } catch (error) {
-      console.error('❌ Unexpected login error:', error);
+      console.error('❌ Auth: Unexpected login error:', error);
       toast({
         title: "Login Error",
         description: "An unexpected error occurred. Please try again.",
@@ -265,7 +161,7 @@ const Auth = () => {
     }
 
     setLoading(true);
-    console.log('🆕 Starting signup process for:', email);
+    console.log('🆕 Auth: Signup attempt for:', email);
 
     try {
       const redirectUrl = `${window.location.origin}/`;
@@ -283,7 +179,7 @@ const Auth = () => {
       });
 
       if (error) {
-        console.error('❌ Signup error:', error);
+        console.error('❌ Auth: Signup error:', error);
         
         let errorMessage = "Signup failed. Please try again.";
         if (error.message.includes('already registered')) {
@@ -298,21 +194,23 @@ const Auth = () => {
         return;
       }
 
-      console.log('✅ Signup successful:', data.user?.id);
+      console.log('✅ Auth: Signup successful');
 
       if (data.user && !data.session) {
-        // Email confirmation required
         toast({
           title: "Check Your Email",
           description: "Please check your email and click the confirmation link to complete your registration.",
         });
       } else if (data.session) {
-        // Auto-confirmed (will be handled by onAuthStateChange)
-        console.log('🔄 Auto-confirmed signup, processing...');
+        toast({
+          title: "Account Created!",
+          description: "Your account has been created successfully.",
+        });
+        navigate('/dashboard', { replace: true });
       }
 
     } catch (error) {
-      console.error('❌ Unexpected signup error:', error);
+      console.error('❌ Auth: Unexpected signup error:', error);
       toast({
         title: "Signup Error",
         description: "An unexpected error occurred. Please try again.",
@@ -325,21 +223,27 @@ const Auth = () => {
 
   const createBusinessProfile = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!user || loading) return;
+    if (loading) return;
 
     if (!businessName) {
       toast({
         title: "Missing Information",
-        description: "Please fill in all required fields.",
+        description: "Please enter your business name.",
         variant: "destructive",
       });
       return;
     }
 
     setLoading(true);
-    console.log('🏗️ Creating business profile for user:', user.id);
+    console.log('🏗️ Auth: Creating business profile...');
 
     try {
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user) {
+        throw new Error('No authenticated user found');
+      }
+
       const businessData = {
         user_id: user.id,
         name: businessName.trim(),
@@ -355,7 +259,7 @@ const Auth = () => {
         .single();
 
       if (error) {
-        console.error('❌ Business profile creation error:', error);
+        console.error('❌ Auth: Business profile creation error:', error);
         toast({
           title: "Profile Creation Failed",
           description: "Failed to create your business profile. Please try again.",
@@ -364,22 +268,17 @@ const Auth = () => {
         return;
       }
 
-      console.log('✅ Business profile created successfully:', newProfile.id);
-      setBusinessProfile(newProfile);
-      setShowBusinessForm(false);
+      console.log('✅ Auth: Business profile created successfully');
 
       toast({
         title: "Profile Created!",
         description: `Welcome to ${newProfile.name}! Your business profile has been created.`,
       });
 
-      // Navigate to dashboard
-      setTimeout(() => {
-        navigate('/dashboard', { replace: true });
-      }, 500);
+      navigate('/dashboard', { replace: true });
 
     } catch (error) {
-      console.error('❌ Unexpected error creating business profile:', error);
+      console.error('❌ Auth: Unexpected error creating business profile:', error);
       toast({
         title: "Creation Error",
         description: "An unexpected error occurred. Please try again.",
@@ -396,14 +295,14 @@ const Auth = () => {
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="flex flex-col items-center gap-4">
           <Loader2 className="h-8 w-8 animate-spin text-primary" />
-          <p className="text-muted-foreground">Initializing...</p>
+          <p className="text-muted-foreground">Loading...</p>
         </div>
       </div>
     );
   }
 
   // Show business profile creation form
-  if (showBusinessForm && user) {
+  if (showBusinessForm) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center p-4">
         <Card className="w-full max-w-md border border-muted/20 bg-muted/5">

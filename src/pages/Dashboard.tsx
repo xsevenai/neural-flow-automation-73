@@ -5,9 +5,8 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import ChatInterface from '@/components/ChatInterface';
-import { Home, MessageSquare, UtensilsCrossed, LayoutGrid, QrCode, Users, FileText, Clock, BarChart3, Share2, Settings, Bell, MapPin, Calendar, ShoppingCart, MessageCircle, User, LogOut, Plus, Trash2, Edit, Loader2 } from 'lucide-react';
+import { Home, MessageSquare, UtensilsCrossed, LayoutGrid, QrCode, ShoppingCart, MessageCircle, User, LogOut, Plus, Trash2, Edit, Loader2, Clock } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -50,57 +49,100 @@ const Dashboard = () => {
     'sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'
   ];
 
-  // Initialize and handle authentication
+  // Fast initialization without hanging
   useEffect(() => {
-    console.log('🚀 Dashboard: Initializing...');
+    console.log('🚀 Dashboard: Fast initialization...');
     
     let mounted = true;
+    const timeoutId = setTimeout(() => {
+      if (mounted) {
+        console.log('⚠️ Dashboard: Initialization timeout, redirecting...');
+        navigate('/auth', { replace: true });
+      }
+    }, 10000); // 10 second timeout
 
     const initDashboard = async () => {
       try {
-        // Set up auth state listener
-        const { data: { subscription } } = supabase.auth.onAuthStateChange(
-          async (event, session) => {
-            if (!mounted) return;
-            
-            console.log(`🔄 Dashboard: Auth state changed: ${event}`, session?.user?.id || 'no user');
-            
-            if (event === 'SIGNED_IN' && session?.user) {
-              setSession(session);
-              setUser(session.user);
-              await loadUserData(session.user.id);
-            } else if (event === 'SIGNED_OUT') {
-              console.log('👋 Dashboard: User signed out, redirecting...');
-              setSession(null);
-              setUser(null);
-              setBusinessProfile(null);
-              navigate('/auth', { replace: true });
-            }
-          }
-        );
-
-        // Check for existing session
-        console.log('🔍 Dashboard: Checking for existing session...');
+        console.log('🔍 Dashboard: Checking session...');
         const { data: { session: currentSession } } = await supabase.auth.getSession();
         
-        if (currentSession?.user && mounted) {
-          console.log('✅ Dashboard: Found existing session:', currentSession.user.id);
-          setSession(currentSession);
-          setUser(currentSession.user);
-          await loadUserData(currentSession.user.id);
-        } else {
-          console.log('❌ Dashboard: No session found, redirecting to auth...');
+        if (!currentSession?.user) {
+          console.log('❌ Dashboard: No session, redirecting...');
           navigate('/auth', { replace: true });
+          return;
         }
 
-        return () => {
-          subscription.unsubscribe();
-        };
+        if (!mounted) return;
+
+        console.log('✅ Dashboard: Session found, loading profile...');
+        setSession(currentSession);
+        setUser(currentSession.user);
+
+        // Try to load business profile with timeout
+        console.log('📊 Dashboard: Loading business profile...');
+        const profilePromise = supabase
+          .from('businesses')
+          .select('*')
+          .eq('user_id', currentSession.user.id)
+          .maybeSingle();
+
+        const timeoutPromise = new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('Profile query timeout')), 5000)
+        );
+
+        const { data: profile, error: profileError } = await Promise.race([
+          profilePromise,
+          timeoutPromise
+        ]) as any;
+
+        if (!mounted) return;
+
+        if (profileError) {
+          console.error('❌ Dashboard: Profile error:', profileError);
+          if (profileError.message.includes('timeout')) {
+            toast({
+              title: "Loading Issue",
+              description: "Profile loading is slow. Please refresh the page.",
+              variant: "destructive",
+            });
+          }
+          navigate('/auth', { replace: true });
+          return;
+        }
+
+        if (!profile) {
+          console.log('❌ Dashboard: No business profile, need to create one');
+          toast({
+            title: "Profile Required",
+            description: "Please complete your business profile setup.",
+            variant: "destructive",
+          });
+          navigate('/auth', { replace: true });
+          return;
+        }
+
+        console.log('✅ Dashboard: Profile loaded:', profile.name);
+        setBusinessProfile(profile);
+
+        // Load other data without blocking
+        loadAllData(profile.id);
+
+        console.log('🎉 Dashboard: Ready!');
+        
       } catch (error) {
-        console.error('❌ Dashboard: Initialization error:', error);
+        console.error('❌ Dashboard: Init error:', error);
         if (mounted) {
-          setError('Failed to initialize dashboard');
+          setError('Failed to load dashboard');
+          toast({
+            title: "Loading Error",
+            description: "Failed to load dashboard. Please try refreshing.",
+            variant: "destructive",
+          });
+        }
+      } finally {
+        if (mounted) {
           setLoading(false);
+          clearTimeout(timeoutId);
         }
       }
     };
@@ -109,61 +151,27 @@ const Dashboard = () => {
 
     return () => {
       mounted = false;
+      clearTimeout(timeoutId);
     };
-  }, [navigate]);
+  }, [navigate, toast]);
 
-  const loadUserData = async (userId: string) => {
+  const loadAllData = async (businessId: string) => {
     try {
-      console.log('📊 Dashboard: Loading user data for:', userId);
-      setLoading(true);
-      setError(null);
-
-      // Fetch business profile first
-      const { data: profile, error: profileError } = await supabase
-        .from('businesses')
-        .select('*')
-        .eq('user_id', userId)
-        .maybeSingle();
-
-      if (profileError) {
-        console.error('❌ Dashboard: Profile fetch error:', profileError);
-        throw new Error(`Failed to load business profile: ${profileError.message}`);
-      }
-
-      if (!profile) {
-        console.log('❌ Dashboard: No business profile found, redirecting to auth...');
-        toast({
-          title: "Profile Required",
-          description: "Please complete your business profile setup.",
-          variant: "destructive",
-        });
-        navigate('/auth', { replace: true });
-        return;
-      }
-
-      console.log('✅ Dashboard: Business profile loaded:', profile.name);
-      setBusinessProfile(profile);
-
-      // Load all business data in parallel
-      await Promise.all([
-        loadWorkingHours(profile.id),
-        loadMenuData(profile.id),
-        loadTables(profile.id),
-        loadOrders(profile.id)
-      ]);
-
-      console.log('🎉 Dashboard: All data loaded successfully');
+      console.log('📊 Dashboard: Loading business data...');
+      
+      // Load data in parallel but don't block UI
+      Promise.all([
+        loadWorkingHours(businessId),
+        loadMenuData(businessId),
+        loadTables(businessId),
+        loadOrders(businessId)
+      ]).catch(error => {
+        console.error('❌ Dashboard: Error loading data:', error);
+        // Don't show error toast for background data loading
+      });
       
     } catch (error) {
-      console.error('❌ Dashboard: Error loading user data:', error);
-      setError(error instanceof Error ? error.message : 'Failed to load dashboard data');
-      toast({
-        title: "Loading Error",
-        description: "Failed to load dashboard data. Please refresh the page.",
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
+      console.error('❌ Dashboard: Data loading error:', error);
     }
   };
 
@@ -240,8 +248,7 @@ const Dashboard = () => {
 
   const handleLogout = async () => {
     try {
-      console.log('👋 Dashboard: Logging out user...');
-      setLoading(true);
+      console.log('👋 Dashboard: Logging out...');
       
       const { error } = await supabase.auth.signOut();
       
@@ -258,6 +265,7 @@ const Dashboard = () => {
           title: "Logged Out",
           description: "You have been successfully logged out.",
         });
+        navigate('/auth', { replace: true });
       }
     } catch (error) {
       console.error('❌ Dashboard: Unexpected logout error:', error);
@@ -266,8 +274,6 @@ const Dashboard = () => {
         description: "An unexpected error occurred during logout.",
         variant: "destructive",
       });
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -342,7 +348,7 @@ const Dashboard = () => {
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="flex flex-col items-center gap-4">
           <Loader2 className="h-8 w-8 animate-spin text-primary" />
-          <p className="text-muted-foreground">Loading your dashboard...</p>
+          <p className="text-muted-foreground">Loading dashboard...</p>
         </div>
       </div>
     );
@@ -742,13 +748,8 @@ const Dashboard = () => {
             variant="ghost"
             className="w-full justify-start text-muted-foreground hover:text-foreground hover:bg-muted/10"
             onClick={handleLogout}
-            disabled={loading}
           >
-            {loading ? (
-              <Loader2 className="mr-3 h-4 w-4 animate-spin" />
-            ) : (
-              <LogOut className="mr-3 h-4 w-4" />
-            )}
+            <LogOut className="mr-3 h-4 w-4" />
             Logout
           </Button>
         </div>
