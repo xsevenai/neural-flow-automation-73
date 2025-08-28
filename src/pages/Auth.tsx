@@ -223,64 +223,73 @@ const Auth = () => {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [agreeTerms, setAgreeTerms] = useState(false);
 
-  // Check if user is already authenticated
+  // Modern authentication setup
   useEffect(() => {
-    console.log('Auth component mounted, checking auth state...');
+    console.log('🚀 Initializing authentication system...');
     let mounted = true;
     
-    // Set up auth state listener FIRST
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        console.log('Auth state change:', event, session?.user?.id);
-        if (!mounted) return;
-        
-        if (event === 'SIGNED_IN' && session) {
-          console.log('User signed in via auth state change');
-          setSession(session);
-          setUser(session.user);
-          // Call handleAuthSuccess but don't await to avoid blocking
-          handleAuthSuccess(session.user).catch(console.error);
-        } else if (event === 'SIGNED_OUT') {
-          console.log('User signed out');
-          setSession(null);
-          setUser(null);
-          setBusinessProfile(null);
-          setLoading(false);
-          navigate('/auth');
-        }
-      }
-    );
-
-    // Then check for existing session
-    const checkAuth = async () => {
+    const initializeAuth = async () => {
       try {
-        console.log('Checking existing session...');
-        const { data: { session } } = await supabase.auth.getSession();
-        if (!mounted) return;
+        // Set up the auth state listener first
+        const { data: { subscription } } = supabase.auth.onAuthStateChange(
+          async (event, session) => {
+            console.log(`🔄 Auth state changed: ${event}`, session?.user?.id || 'no user');
+            
+            if (!mounted) return;
+            
+            if (event === 'SIGNED_IN' && session?.user) {
+              console.log('✅ User signed in successfully');
+              setSession(session);
+              setUser(session.user);
+              
+              // Process the authentication success
+              await handleAuthSuccess(session.user);
+              
+            } else if (event === 'SIGNED_OUT') {
+              console.log('👋 User signed out');
+              setSession(null);
+              setUser(null);
+              setBusinessProfile(null);
+              setLoading(false);
+              navigate('/auth');
+            }
+          }
+        );
+
+        // Check for existing session
+        console.log('🔍 Checking for existing session...');
+        const { data: { session }, error } = await supabase.auth.getSession();
         
-        if (session) {
-          console.log('Found existing session:', session.user.id);
+        if (error) {
+          console.error('❌ Session check error:', error);
+          if (mounted) setLoading(false);
+          return;
+        }
+        
+        if (session?.user && mounted) {
+          console.log('🔑 Found existing session for user:', session.user.id);
           setSession(session);
           setUser(session.user);
           await handleAuthSuccess(session.user);
         } else {
-          console.log('No existing session found');
-          setLoading(false);
+          console.log('📭 No existing session found');
+          if (mounted) setLoading(false);
         }
+
+        return subscription;
+        
       } catch (error) {
-        console.error('Error checking session:', error);
-        if (mounted) {
-          setLoading(false);
-        }
+        console.error('💥 Auth initialization error:', error);
+        if (mounted) setLoading(false);
       }
     };
 
-    checkAuth();
+    const subscription = initializeAuth();
 
     return () => {
-      console.log('Cleaning up auth subscription');
+      console.log('🧹 Cleaning up auth subscription');
       mounted = false;
-      subscription.unsubscribe();
+      subscription.then(sub => sub?.unsubscribe()).catch(console.error);
     };
   }, [navigate]);
 
@@ -297,32 +306,56 @@ const Auth = () => {
 
 
   const handleAuthSuccess = async (user: SupabaseUser) => {
-    console.log('handleAuthSuccess called for user:', user.id);
-    
-    // TEMPORARY FIX: Direct redirect to dashboard to bypass profile check
-    console.log('BYPASSING PROFILE CHECK - DIRECT REDIRECT');
-    setLoading(false);
+    console.log('🔐 Authentication Success - Processing user:', user.id);
     
     try {
-      navigate('/dashboard');
-      console.log('Direct navigate called');
+      setLoading(true);
       
-      // Force redirect with window.location if navigate fails
-      setTimeout(() => {
-        if (window.location.pathname.includes('/auth')) {
-          console.log('Forcing redirect with window.location');
-          window.location.href = '/dashboard';
-        }
-      }, 500);
+      // Wait a moment for the auth context to fully initialize
+      await new Promise(resolve => setTimeout(resolve, 100));
       
-      return;
-    } catch (error) {
-      console.error('Navigation error:', error);
-      window.location.href = '/dashboard';
-      return;
-    }
-    
-    // REST OF HANDLEAUTHSUCCESS IS TEMPORARILY COMMENTED OUT FOR DEBUGGING
+      console.log('📊 Checking business profile for user...');
+      
+      // Try to get the current session to ensure auth context is available
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+      
+      if (sessionError || !session) {
+        console.error('❌ No valid session found:', sessionError);
+        throw new Error('Authentication session is invalid');
+      }
+      
+      console.log('✅ Valid session confirmed');
+      
+      // Now query the business profile with the authenticated context
+      const { data: profile, error: profileError } = await supabase
+        .from('businesses')
+        .select('*')
+        .eq('user_id', user.id)
+        .maybeSingle();
+
+      console.log('📋 Profile query result:', { 
+        hasProfile: !!profile, 
+        error: profileError,
+        userId: user.id 
+      });
+
+      if (profileError) {
+        console.error('❌ Database error fetching profile:', profileError);
+        throw new Error(`Failed to load business profile: ${profileError.message}`);
+      }
+
+      if (profile) {
+        console.log('🏢 Business profile found - redirecting to dashboard');
+        setBusinessProfile(profile);
+        setLoading(false);
+        
+        toast({
+          title: "Welcome back!",
+          description: `Welcome to ${profile.name}`,
+        });
+        
+        navigate('/dashboard');
+        return;
   };
 
   const createBusinessProfile = async (user: SupabaseUser) => {
@@ -437,43 +470,48 @@ const Auth = () => {
     
     if (!loginEmail || !loginPassword) {
       toast({
-        title: "Error",
+        title: "Missing Information",
         description: "Please fill in all fields",
         variant: "destructive",
       });
       return;
     }
 
+    console.log('🔐 Starting login process for:', loginEmail);
     setLoading(true);
     
     try {
-      console.log('Attempting login with email:', loginEmail);
       const { data, error } = await supabase.auth.signInWithPassword({
-        email: loginEmail,
+        email: loginEmail.trim(),
         password: loginPassword,
       });
 
       if (error) {
-        console.error('Login error from Supabase:', error);
+        console.error('❌ Login error from Supabase:', error);
         throw error;
       }
 
-      console.log('Login successful, user:', data.user?.id);
-      console.log('Session:', !!data.session);
-      
-      toast({
-        title: "Welcome back!",
-        description: "Successfully signed in",
-      });
+      console.log('✅ Login request successful');
       
       // Don't set loading to false here - let the auth state change handle it
+      // The auth state listener will automatically call handleAuthSuccess
       
     } catch (error: any) {
-      console.error('Login error:', error);
-      setLoading(false); // Only reset loading on error
+      console.error('💥 Login failed:', error);
+      setLoading(false);
+      
+      let errorMessage = "Invalid email or password";
+      if (error.message?.includes('Invalid login credentials')) {
+        errorMessage = "Invalid email or password";
+      } else if (error.message?.includes('Email not confirmed')) {
+        errorMessage = "Please check your email and confirm your account";
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+      
       toast({
         title: "Login Failed",
-        description: error.message || "Invalid email or password",
+        description: errorMessage,
         variant: "destructive",
       });
     }
