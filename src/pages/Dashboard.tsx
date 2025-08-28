@@ -6,6 +6,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import ChatInterface from '@/components/ChatInterface';
 import { Home, MessageSquare, UtensilsCrossed, Database, LayoutGrid, QrCode, Users, FileText, Clock, BarChart3, Share2, Settings, Bell, MapPin, Calendar, ShoppingCart, MessageCircle, User, LogOut, Plus, Trash2, Edit } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -633,91 +634,7 @@ const Dashboard = () => {
         );
 
       case 'chat':
-        const sendMessage = () => {
-          if (chatMessage.trim()) {
-            const userMessage = {
-              id: Date.now().toString(),
-              text: chatMessage.trim(),
-              sender: 'user' as const,
-              timestamp: new Date()
-            };
-            
-            setChatMessages(prev => [...prev, userMessage]);
-            
-            // Simulate AI response
-            setTimeout(() => {
-              const aiResponse = {
-                id: (Date.now() + 1).toString(),
-                text: `I understand you're asking about "${chatMessage.trim()}". As your AI assistant for ${businessProfile.name}, I can help you with menu optimization, business insights, and operational guidance. This feature will be fully functional soon!`,
-                sender: 'ai' as const,
-                timestamp: new Date()
-              };
-              setChatMessages(prev => [...prev, aiResponse]);
-            }, 1000);
-            
-            setChatMessage('');
-          }
-        };
-
-        const handleKeyPress = (e: React.KeyboardEvent) => {
-          if (e.key === 'Enter' && !e.shiftKey) {
-            e.preventDefault();
-            sendMessage();
-          }
-        };
-
-        return (
-          <div className="space-y-6 h-full overflow-y-auto">
-            <div>
-              <h1 className="text-2xl font-bold text-foreground mb-2">AI Assistant</h1>
-              <p className="text-muted-foreground mb-6">Get help managing your restaurant business</p>
-            </div>
-
-            <Card className="border border-muted/20 bg-muted/5 flex-1">
-              <CardContent className="p-0 h-full flex flex-col">
-                <div className="flex-1 p-4 min-h-[400px] max-h-[500px] overflow-y-auto">
-                  <div className="space-y-4">
-                    <div className="flex justify-start">
-                      <div className="max-w-[80%] p-3 rounded-lg bg-muted text-muted-foreground">
-                        Hello! I'm your AI assistant for {businessProfile.name}. I can help you with menu optimization, business analytics, customer service guidance, and operational improvements.
-                      </div>
-                    </div>
-                    
-                    {chatMessages.map((message) => (
-                      <div key={message.id} className={`flex ${message.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
-                        <div className={`max-w-[80%] p-3 rounded-lg ${
-                          message.sender === 'user' 
-                            ? 'bg-primary text-primary-foreground ml-12' 
-                            : 'bg-muted text-muted-foreground mr-12'
-                        }`}>
-                          {message.text}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-                <div className="p-4 border-t border-muted/20">
-                  <div className="flex gap-2">
-                    <Textarea
-                      placeholder="Ask me anything about your restaurant business..."
-                      value={chatMessage}
-                      onChange={(e) => setChatMessage(e.target.value)}
-                      onKeyPress={handleKeyPress}
-                      className="border-muted/30 bg-background/50 resize-none"
-                      rows={1}
-                    />
-                    <Button 
-                      className="bg-primary hover:bg-primary/90 text-primary-foreground"
-                      onClick={sendMessage}
-                    >
-                      Send
-                    </Button>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        );
+        return <ChatInterface businessName={businessProfile.name} />;
 
       default:
         const activeTables = tables.filter(table => table.is_active).length;
