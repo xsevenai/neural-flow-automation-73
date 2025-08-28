@@ -12,21 +12,31 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import type { Session, User as SupabaseUser } from '@supabase/supabase-js';
 
-// Type definitions
+// Type definitions - matching database schema
 interface BusinessProfile {
   id: string;
   user_id: string;
-  business_name: string;
-  business_type: string;
-  business_email: string;
-  business_phone?: string;
-  business_address?: string;
-  business_city?: string;
-  business_state?: string;
-  business_country?: string;
-  business_website?: string;
-  company_size?: string;
-  industry_type?: string;
+  name: string;
+  slug: string;
+  category?: string;
+  description?: string;
+  branding_config?: any;
+  category_config?: any;
+  contact_info?: any;
+  settings?: any;
+  phone_config?: any;
+  phone_features?: any;
+  phone_usage?: any;
+  is_active?: boolean;
+  custom_phone_sid?: string;
+  stripe_customer_id?: string;
+  stripe_subscription_id?: string;
+  custom_phone_number?: string;
+  custom_whatsapp_number?: string;
+  subscription_plan?: string;
+  subscription_status?: string;
+  trial_ends_at?: string;
+  custom_number_monthly_cost?: number;
   created_at: string;
   updated_at: string;
 }
@@ -166,7 +176,7 @@ const Dashboard = () => {
     try {
       // Fetch business profile
       const { data: profile, error: profileError } = await supabase
-        .from('business_profiles')
+        .from('businesses')
         .select('*')
         .eq('user_id', userId)
         .maybeSingle();
@@ -198,23 +208,62 @@ const Dashboard = () => {
         ordersResult
       ] = await Promise.all([
         supabase.from('working_hours').select('*').eq('business_id', businessId),
-        supabase.from('menu_categories').select('*').eq('business_id', businessId).order('display_order'),
-        supabase.from('menu_items').select('*').eq('business_id', businessId).order('display_order'),
-        supabase.from('restaurant_tables').select('*').eq('business_id', businessId).eq('is_active', true),
+        supabase.from('menu_categories').select('*').eq('business_id', businessId).order('sort_order'),
+        supabase.from('menu_items').select('*').eq('business_id', businessId).order('sort_order'),
+        supabase.from('tables').select('*').eq('business_id', businessId).eq('is_active', true),
         supabase.from('orders').select('*').eq('business_id', businessId).order('created_at', { ascending: false })
       ]);
 
       if (workingHoursResult.data) setWorkingHours(workingHoursResult.data);
-      if (categoriesResult.data) setMenuCategories(categoriesResult.data);
-      if (menuItemsResult.data) setMenuItems(menuItemsResult.data);
-      if (tablesResult.data) setTables(tablesResult.data);
+      if (categoriesResult.data) {
+        // Map sort_order to display_order for menu categories
+        const mappedCategories = categoriesResult.data.map(cat => ({
+          ...cat,
+          display_order: cat.sort_order || 0
+        }));
+        setMenuCategories(mappedCategories);
+      }
+      if (menuItemsResult.data) {
+        // Map sort_order to display_order and add missing fields for menu items
+        const mappedItems = menuItemsResult.data.map(item => ({
+          ...item,
+          display_order: item.sort_order || 0,
+          is_featured: false,
+          prep_time: undefined,
+          allergens: undefined,
+          dietary_tags: undefined
+        }));
+        setMenuItems(mappedItems);
+      }
+      if (tablesResult.data) {
+        // Map database table fields to component interface
+        const mappedTables = tablesResult.data.map(table => ({
+          ...table,
+          table_number: table.table_number || 'Table',
+          capacity: table.seats || 4,
+          position_x: 0,
+          position_y: 0,
+          qr_code_url: table.qr_code || undefined
+        }));
+        setTables(mappedTables);
+      }
       if (ordersResult.data) {
-        // Type cast the orders data to match our interface
-        const typedOrders = ordersResult.data as Order[];
-        setOrders(typedOrders);
+        // Map database order fields to component interface
+        const mappedOrders = ordersResult.data.map(order => ({
+          ...order,
+          order_number: `ORD-${order.id.slice(-8).toUpperCase()}`,
+          order_type: 'dine-in' as const,
+          status: (order.status === 'pending' || order.status === 'confirmed' || 
+                  order.status === 'preparing' || order.status === 'ready' || 
+                  order.status === 'served' || order.status === 'completed' || 
+                  order.status === 'cancelled') ? 
+                  order.status as 'pending' | 'confirmed' | 'preparing' | 'ready' | 'served' | 'completed' | 'cancelled' : 
+                  'pending' as const
+        }));
+        setOrders(mappedOrders);
         // Filter today's orders
         const today = new Date().toISOString().split('T')[0];
-        const todayOrdersFiltered = typedOrders.filter(order => 
+        const todayOrdersFiltered = mappedOrders.filter(order => 
           order.created_at.startsWith(today)
         );
         setTodayOrders(todayOrdersFiltered);
@@ -288,7 +337,7 @@ const Dashboard = () => {
         .insert({
           business_id: businessProfile.id,
           name: newCategoryName.trim(),
-          display_order: menuCategories.length
+          sort_order: menuCategories.length
         });
 
       if (error) throw error;
@@ -635,7 +684,7 @@ const Dashboard = () => {
           <div className="space-y-6 h-full overflow-y-auto">
             <div>
               <h1 className="text-2xl font-bold text-foreground mb-2">Dashboard Overview</h1>
-              <p className="text-muted-foreground mb-6">Welcome back to {businessProfile.business_name}</p>
+              <p className="text-muted-foreground mb-6">Welcome back to {businessProfile.name}</p>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -732,7 +781,7 @@ const Dashboard = () => {
           <div className="neural-card border-border h-full overflow-hidden flex flex-col">
             <div className="p-4 border-b border-border flex-shrink-0">
               <div className="flex items-center justify-between">
-                <h1 className="text-foreground text-xl font-semibold">{businessProfile.business_name}</h1>
+                <h1 className="text-foreground text-xl font-semibold">{businessProfile.name}</h1>
                 <Button
                   variant="ghost"
                   size="icon"
@@ -742,7 +791,7 @@ const Dashboard = () => {
                   <LogOut className="h-4 w-4" />
                 </Button>
               </div>
-              <p className="text-muted-foreground text-sm">{businessProfile.business_type}</p>
+              <p className="text-muted-foreground text-sm">{businessProfile.category}</p>
             </div>
             
             <div className="flex-1 p-3 overflow-y-auto">

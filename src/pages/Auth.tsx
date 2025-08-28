@@ -261,7 +261,7 @@ const Auth = () => {
     try {
       // Check if business profile exists
       const { data: profile } = await supabase
-        .from('business_profiles')
+        .from('businesses')
         .select('*')
         .eq('user_id', user.id)
         .maybeSingle();
@@ -279,17 +279,13 @@ const Auth = () => {
             const businessData = JSON.parse(tempBusinessData);
             
             const { error: profileError } = await supabase
-              .from('business_profiles')
+              .from('businesses')
               .insert({
                 user_id: user.id,
-                business_name: businessData.businessName,
-                business_type: businessData.businessType,
-                business_email: businessData.businessEmail,
-                business_phone: businessData.businessPhone,
-                business_address: businessData.businessAddress,
-                business_city: businessData.businessCity,
-                business_state: businessData.businessState,
-                business_country: businessData.businessCountry
+                name: businessData.businessName,
+                slug: businessData.businessName.toLowerCase().replace(/\s+/g, '-'),
+                category: businessData.businessType,
+                description: businessData.businessEmail
               });
 
             if (profileError) {
@@ -298,7 +294,7 @@ const Auth = () => {
 
             // Get the created business profile
             const { data: newProfile } = await supabase
-              .from('business_profiles')
+              .from('businesses')
               .select('id')
               .eq('user_id', user.id)
               .single();
