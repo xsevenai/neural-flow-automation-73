@@ -475,10 +475,14 @@ const Auth = () => {
 
       // Create auth user
       const { data: authData, error: authError } = await supabase.auth.signUp({
-        email: ownerEmail,
+        email: ownerEmail.trim(),
         password: ownerPassword,
         options: {
-          emailRedirectTo: `${window.location.origin}/dashboard`
+          emailRedirectTo: `${window.location.origin}/dashboard`,
+          data: {
+            full_name: ownerName,
+            business_name: businessName
+          }
         }
       });
 
