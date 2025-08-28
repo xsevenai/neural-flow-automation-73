@@ -692,106 +692,106 @@ const Dashboard = () => {
     }
   };
 
-  // Three Panel Dashboard Layout - Matching the NotebookLM Design
+  // Three Panel Dashboard Layout - Clean Professional Design
   return (
-    <div className="min-h-screen bg-background p-4">
-      <div className="max-w-7xl mx-auto h-[calc(100vh-2rem)] flex gap-4">
+    <div className="min-h-screen bg-background p-6">
+      <div className="max-w-7xl mx-auto h-[calc(100vh-3rem)] flex gap-6">
         
-        {/* Left Panel - Navigation (Rounded) */}
-        <div className="w-64 bg-card rounded-2xl border border-border/50 p-4 flex flex-col shadow-sm">
-          <div className="mb-6">
-            <h2 className="text-lg font-semibold text-foreground">{businessProfile.name}</h2>
-            <p className="text-sm text-muted-foreground">Restaurant Dashboard</p>
+        {/* Left Panel - Navigation (No borders) */}
+        <div className="w-64 bg-card rounded-3xl p-6 flex flex-col shadow-2xl">
+          <div className="mb-8">
+            <h2 className="text-xl font-semibold text-foreground neural-heading">{businessProfile.name}</h2>
+            <p className="text-sm text-muted-foreground">Enterprise Dashboard</p>
           </div>
           
-          <nav className="flex-1 space-y-2">
+          <nav className="flex-1 space-y-3">
             {navigationItems.map((item) => {
               const Icon = item.icon;
               return (
                 <button
                   key={item.id}
                   onClick={() => setActiveSection(item.id)}
-                  className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                  className={`w-full flex items-center gap-4 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 ${
                     activeSection === item.id
-                      ? 'bg-primary text-primary-foreground'
-                      : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
+                      ? 'bg-primary text-primary-foreground shadow-lg'
+                      : 'text-muted-foreground hover:text-foreground hover:bg-surface-medium/50'
                   }`}
                 >
-                  <Icon className="h-4 w-4" />
+                  <Icon className="h-5 w-5" />
                   {item.label}
                 </button>
               );
             })}
           </nav>
           
-          <div className="pt-4 border-t border-border/50 mt-auto">
+          <div className="pt-6 mt-auto">
             <button
               onClick={handleLogout}
-              className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors"
+              className="w-full flex items-center gap-4 px-4 py-3 rounded-xl text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-surface-medium/50 transition-all duration-200"
             >
-              <LogOut className="h-4 w-4" />
+              <LogOut className="h-5 w-5" />
               Logout
             </button>
           </div>
         </div>
 
-        {/* Center Panel - Main Content (Rounded) */}
-        <div className="flex-1 bg-card rounded-2xl border border-border/50 p-6 overflow-hidden shadow-sm">
+        {/* Center Panel - Main Content (Clean) */}
+        <div className="flex-1 bg-card rounded-3xl p-8 overflow-hidden shadow-2xl">
           {renderMainContent()}
         </div>
 
-        {/* Right Panel - Analytics/Stats (Rounded) */}
-        <div className="w-80 bg-card rounded-2xl border border-border/50 p-4 flex flex-col shadow-sm">
-          <div className="mb-6">
-            <h3 className="text-lg font-semibold text-foreground">Quick Stats</h3>
-            <p className="text-sm text-muted-foreground">Live business overview</p>
+        {/* Right Panel - Analytics/Stats (Clean) */}
+        <div className="w-80 bg-card rounded-3xl p-6 flex flex-col shadow-2xl">
+          <div className="mb-8">
+            <h3 className="text-xl font-semibold text-foreground neural-heading">Analytics</h3>
+            <p className="text-sm text-muted-foreground">Live business insights</p>
           </div>
           
-          <div className="space-y-4 flex-1">
-            <Card className="border border-border/30">
-              <CardContent className="p-3">
+          <div className="space-y-6 flex-1">
+            <Card className="bg-surface-medium/50 shadow-lg">
+              <CardContent className="p-4">
                 <div className="text-center">
-                  <p className="text-xs text-muted-foreground">Today's Revenue</p>
-                  <p className="text-lg font-bold text-foreground">
+                  <p className="text-xs text-muted-foreground mb-1">Today's Revenue</p>
+                  <p className="text-2xl font-bold text-foreground">
                     ${todayOrders.reduce((sum, order) => sum + order.total_amount, 0).toFixed(2)}
                   </p>
                 </div>
               </CardContent>
             </Card>
 
-            <Card className="border border-border/30">
-              <CardContent className="p-3">
+            <Card className="bg-surface-medium/50 shadow-lg">
+              <CardContent className="p-4">
                 <div className="text-center">
-                  <p className="text-xs text-muted-foreground">Active Tables</p>
-                  <p className="text-lg font-bold text-foreground">
+                  <p className="text-xs text-muted-foreground mb-1">Active Tables</p>
+                  <p className="text-2xl font-bold text-foreground">
                     {tables.filter(t => t.is_active).length}/{tables.length}
                   </p>
                 </div>
               </CardContent>
             </Card>
 
-            <Card className="border border-border/30">
-              <CardContent className="p-3">
+            <Card className="bg-surface-medium/50 shadow-lg">
+              <CardContent className="p-4">
                 <div className="text-center">
-                  <p className="text-xs text-muted-foreground">Pending Orders</p>
-                  <p className="text-lg font-bold text-foreground">
+                  <p className="text-xs text-muted-foreground mb-1">Pending Orders</p>
+                  <p className="text-2xl font-bold text-foreground">
                     {orders.filter(o => o.status === 'pending').length}
                   </p>
                 </div>
               </CardContent>
             </Card>
 
-            <div className="mt-6">
-              <h4 className="text-sm font-medium text-foreground mb-3">Recent Activity</h4>
-              <div className="space-y-2">
+            <div className="mt-8">
+              <h4 className="text-sm font-semibold text-foreground mb-4">Recent Activity</h4>
+              <div className="space-y-3">
                 {orders.slice(0, 3).map((order) => (
-                  <div key={order.id} className="text-xs p-2 bg-muted/50 rounded-lg">
+                  <div key={order.id} className="text-xs p-3 bg-surface-medium/30 rounded-lg">
                     <p className="text-foreground font-medium">Order #{order.id.slice(0, 6)}</p>
                     <p className="text-muted-foreground">${order.total_amount.toFixed(2)} • {order.status}</p>
                   </div>
                 ))}
                 {orders.length === 0 && (
-                  <p className="text-xs text-muted-foreground text-center py-4">No recent activity</p>
+                  <p className="text-xs text-muted-foreground text-center py-6">No recent activity</p>
                 )}
               </div>
             </div>

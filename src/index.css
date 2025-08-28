@@ -8,67 +8,67 @@
 
 @layer base {
   :root {
-    /* Light Theme - Professional Dashboard Design */
-    --background: 215 25% 11%;
-    --foreground: 213 31% 91%;
+    /* Professional Dark Theme */
+    --background: 215 28% 9%;
+    --foreground: 210 40% 94%;
     
-    /* Surface Colors - Dark professional theme */
-    --surface-dark: 217 19% 15%;
-    --surface-medium: 215 25% 18%;
-    --surface-light: 213 31% 91%;
-    --surface-glass: 215 25% 11% / 0.85;
+    /* Surface Colors - Professional gradients */
+    --surface-dark: 216 28% 12%;
+    --surface-medium: 215 27% 15%;
+    --surface-light: 210 40% 94%;
+    --surface-glass: 215 28% 9% / 0.95;
     
-    /* Neural Accent Colors */
-    --neural-cyan: 195 100% 50%;
-    --neural-violet: 271 81% 56%;
-    --neural-chrome: 213 31% 91%;
+    /* Professional Accent Colors */
+    --neural-cyan: 200 98% 39%;
+    --neural-violet: 262 83% 58%;
+    --neural-chrome: 210 40% 94%;
     
-    /* Glow Effects */
-    --glow-cyan: 195 100% 50% / 0.3;
-    --glow-violet: 271 81% 56% / 0.3;
-    --glow-chrome: 213 31% 91% / 0.2;
+    /* Subtle Glow Effects */
+    --glow-cyan: 200 98% 39% / 0.15;
+    --glow-violet: 262 83% 58% / 0.15;
+    --glow-chrome: 210 40% 94% / 0.1;
     
     /* Enterprise Colors */
-    --primary: 195 100% 50%;
-    --primary-foreground: 215 25% 11%;
-    --secondary: 217 19% 15%;
-    --secondary-foreground: 213 31% 91%;
+    --primary: 200 98% 39%;
+    --primary-foreground: 215 28% 9%;
+    --secondary: 216 28% 12%;
+    --secondary-foreground: 210 40% 94%;
     
-    /* Cards & Panels - Dark glass effect */
-    --card: 217 19% 15% / 0.9;
-    --card-foreground: 213 31% 91%;
-    --glass-border: 213 31% 91% / 0.1;
+    /* Cards & Panels - Clean professional look */
+    --card: 216 28% 12%;
+    --card-foreground: 210 40% 94%;
+    --glass-border: 200 98% 39% / 0.1;
     
     /* Interactive States */
-    --accent: 271 81% 56%;
-    --accent-foreground: 215 25% 11%;
-    --muted: 215 25% 18%;
-    --muted-foreground: 217 32% 65%;
+    --accent: 262 83% 58%;
+    --accent-foreground: 215 28% 9%;
+    --muted: 215 27% 15%;
+    --muted-foreground: 215 20% 65%;
     
-    /* Utility Colors */
-    --border: 213 31% 91% / 0.1;
-    --input: 217 19% 15%;
-    --ring: 195 100% 50%;
-    --destructive: 0 85% 60%;
-    --destructive-foreground: 213 31% 91%;
+    /* Utility Colors - No harsh borders */
+    --border: 200 98% 39% / 0.08;
+    --input: 216 28% 12%;
+    --ring: 200 98% 39%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 210 40% 94%;
     
     /* Additional colors */
-    --popover: 215 25% 11%;
-    --popover-foreground: 213 31% 91%;
+    --popover: 215 28% 9%;
+    --popover-foreground: 210 40% 94%;
 
     /* Spacing & Effects */
-    --radius: 12px;
-    --neural-blur: 20px;
+    --radius: 16px;
+    --neural-blur: 24px;
 
-    /* Sidebar */
-    --sidebar-background: 217 19% 15%;
-    --sidebar-foreground: 213 31% 91%;
-    --sidebar-primary: 195 100% 50%;
-    --sidebar-primary-foreground: 215 25% 11%;
-    --sidebar-accent: 215 25% 18%;
-    --sidebar-accent-foreground: 213 31% 91%;
-    --sidebar-border: 213 31% 91% / 0.1;
-    --sidebar-ring: 195 100% 50%;
+    /* Sidebar - Professional styling */
+    --sidebar-background: 216 28% 12%;
+    --sidebar-foreground: 210 40% 94%;
+    --sidebar-primary: 200 98% 39%;
+    --sidebar-primary-foreground: 215 28% 9%;
+    --sidebar-accent: 215 27% 15%;
+    --sidebar-accent-foreground: 210 40% 94%;
+    --sidebar-border: 200 98% 39% / 0.08;
+    --sidebar-ring: 200 98% 39%;
   }
 
   .dark {
