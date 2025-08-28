@@ -423,8 +423,8 @@ const Dashboard = () => {
     order.created_at.startsWith(today)
   );
 
-  // Render dashboard content based on active section
-  const renderDashboardContent = () => {
+  // Render main content based on active section
+  const renderMainContent = () => {
     switch (activeSection) {
       case 'chat':
         return <ChatInterface businessName={businessProfile.name} />;
@@ -437,7 +437,7 @@ const Dashboard = () => {
               <p className="text-muted-foreground mb-6">Manage your restaurant menu categories and items</p>
             </div>
 
-            <Card className="border border-muted/20 bg-muted/5">
+            <Card className="border border-border/50">
               <CardHeader>
                 <CardTitle className="text-foreground text-base">Menu Categories</CardTitle>
                 <CardDescription>Organize your menu items into categories</CardDescription>
@@ -448,7 +448,7 @@ const Dashboard = () => {
                     placeholder="Add new category (e.g., Appetizers, Main Courses)"
                     value={newCategoryName}
                     onChange={(e) => setNewCategoryName(e.target.value)}
-                    className="bg-background/50 border-muted/30"
+                    className="bg-background/50 border-border/30"
                     onKeyPress={(e) => {
                       if (e.key === 'Enter' && newCategoryName.trim()) {
                         addMenuCategory();
@@ -471,7 +471,7 @@ const Dashboard = () => {
                 <div className="space-y-3">
                   {menuCategories.length > 0 ? (
                     menuCategories.map((category) => (
-                      <div key={category.id} className="flex items-center justify-between border border-muted/30 bg-background/50 rounded-lg p-3">
+                      <div key={category.id} className="flex items-center justify-between border border-border/30 bg-background/50 rounded-lg p-3">
                         <div>
                           <h3 className="text-foreground font-medium">{category.name}</h3>
                           {category.description && (
@@ -516,7 +516,7 @@ const Dashboard = () => {
               <p className="text-muted-foreground mb-6">Manage your restaurant tables and QR codes</p>
             </div>
 
-            <Card className="border border-muted/20 bg-muted/5">
+            <Card className="border border-border/50">
               <CardHeader>
                 <CardTitle className="text-foreground text-base">Restaurant Tables</CardTitle>
                 <CardDescription>View and manage your table setup</CardDescription>
@@ -525,7 +525,7 @@ const Dashboard = () => {
                 {tables.length > 0 ? (
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     {tables.map((table) => (
-                      <div key={table.id} className="border border-muted/30 bg-background/50 rounded-lg p-4">
+                      <div key={table.id} className="border border-border/30 bg-background/50 rounded-lg p-4">
                         <div className="flex items-center justify-between mb-2">
                           <h3 className="text-foreground font-medium">Table {table.table_number}</h3>
                           <Badge variant={table.is_active ? "default" : "secondary"}>
@@ -538,7 +538,7 @@ const Dashboard = () => {
                         <Button
                           variant="outline"
                           size="sm"
-                          className="w-full border-muted/30"
+                          className="w-full border-border/30"
                         >
                           <QrCode className="mr-2 h-4 w-4" />
                           Generate QR Code
@@ -564,18 +564,18 @@ const Dashboard = () => {
               <p className="text-muted-foreground mb-6">Configure your restaurant operating hours</p>
             </div>
 
-            <Card className="border border-muted/20 bg-muted/5">
+            <Card className="border border-border/50">
               <CardHeader>
                 <CardTitle className="text-foreground text-base">Weekly Schedule</CardTitle>
                 <CardDescription>Set your opening and closing times for each day</CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {daysOfWeek.map((day, index) => {
+                  {daysOfWeek.map((day) => {
                     const dayHours = workingHours.find(h => h.day_of_week === day);
                     const dayLabel = day.charAt(0).toUpperCase() + day.slice(1);
                     return (
-                      <div key={day} className="flex items-center justify-between border border-muted/30 bg-background/50 rounded-lg p-4">
+                      <div key={day} className="flex items-center justify-between border border-border/30 bg-background/50 rounded-lg p-4">
                         <div className="flex items-center gap-3">
                           <span className="text-foreground font-medium w-20">{dayLabel}</span>
                           <Switch
@@ -587,14 +587,14 @@ const Dashboard = () => {
                           <Input
                             type="time"
                             value={dayHours?.open_time || "09:00"}
-                            className="w-24 bg-background/50 border-muted/30"
+                            className="w-24 bg-background/50 border-border/30"
                             disabled={!dayHours?.is_open}
                           />
                           <span className="text-muted-foreground">to</span>
                           <Input
                             type="time"
                             value={dayHours?.close_time || "22:00"}
-                            className="w-24 bg-background/50 border-muted/30"
+                            className="w-24 bg-background/50 border-border/30"
                             disabled={!dayHours?.is_open}
                           />
                         </div>
@@ -613,94 +613,76 @@ const Dashboard = () => {
           </div>
         );
 
-      default: // Dashboard overview
-        const activeTables = tables.filter(table => table.is_active).length;
-        const totalTables = tables.length;
-        const occupancyRate = totalTables > 0 ? Math.round((activeTables / totalTables) * 100) : 0;
-        
+      default:
         return (
           <div className="space-y-6 h-full overflow-y-auto">
             <div>
               <h1 className="text-2xl font-bold text-foreground mb-2">Dashboard Overview</h1>
-              <p className="text-muted-foreground mb-6">Welcome back to {businessProfile.name}</p>
+              <p className="text-muted-foreground">Welcome back! Here's what's happening today.</p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              <Card className="border border-muted/20 bg-muted/5">
-                <CardHeader>
-                  <CardTitle className="text-foreground flex items-center gap-2 text-base">
-                    <ShoppingCart className="h-4 w-4 text-primary" />
-                    Orders Today
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold text-foreground">{todayOrders.length}</div>
-                  <p className="text-primary text-sm">
-                    {todayOrders.filter(o => o.status === 'pending').length} pending
-                  </p>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <Card className="border border-border/50">
+                <CardContent className="p-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm text-muted-foreground">Today's Orders</p>
+                      <p className="text-2xl font-bold text-foreground">{todayOrders.length}</p>
+                    </div>
+                    <ShoppingCart className="h-8 w-8 text-primary" />
+                  </div>
                 </CardContent>
               </Card>
 
-              <Card className="border border-muted/20 bg-muted/5">
-                <CardHeader>
-                  <CardTitle className="text-foreground flex items-center gap-2 text-base">
-                    <LayoutGrid className="h-4 w-4 text-muted-foreground" />
-                    Tables
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold text-foreground">{activeTables}/{totalTables}</div>
-                  <p className="text-muted-foreground text-sm">{occupancyRate}% capacity</p>
+              <Card className="border border-border/50">
+                <CardContent className="p-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm text-muted-foreground">Menu Items</p>
+                      <p className="text-2xl font-bold text-foreground">{menuItems.length}</p>
+                    </div>
+                    <UtensilsCrossed className="h-8 w-8 text-primary" />
+                  </div>
                 </CardContent>
               </Card>
 
-              <Card className="border border-muted/20 bg-muted/5">
-                <CardHeader>
-                  <CardTitle className="text-foreground flex items-center gap-2 text-base">
-                    <UtensilsCrossed className="h-4 w-4 text-muted-foreground" />
-                    Menu Items
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold text-foreground">{menuItems.length}</div>
-                  <p className="text-muted-foreground text-sm">
-                    {menuItems.filter(item => item.is_available).length} available
-                  </p>
+              <Card className="border border-border/50">
+                <CardContent className="p-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm text-muted-foreground">Tables</p>
+                      <p className="text-2xl font-bold text-foreground">{tables.length}</p>
+                    </div>
+                    <LayoutGrid className="h-8 w-8 text-primary" />
+                  </div>
                 </CardContent>
               </Card>
             </div>
 
-            <Card className="border border-muted/20 bg-muted/5">
+            <Card className="border border-border/50">
               <CardHeader>
-                <CardTitle className="text-foreground text-base">Recent Orders</CardTitle>
+                <CardTitle>Recent Orders</CardTitle>
+                <CardDescription>Your latest customer orders</CardDescription>
               </CardHeader>
               <CardContent>
-                {orders.slice(0, 5).length > 0 ? (
+                {todayOrders.length > 0 ? (
                   <div className="space-y-3">
-                    {orders.slice(0, 5).map((order) => (
-                      <div key={order.id} className="flex items-center justify-between border border-muted/30 bg-background/50 rounded-lg p-3">
+                    {todayOrders.slice(0, 5).map((order) => (
+                      <div key={order.id} className="flex items-center justify-between border border-border/30 rounded-lg p-3">
                         <div>
-                          <span className="text-foreground font-medium">#{order.id.slice(0, 8)}</span>
-                          {order.customer_name && (
-                            <p className="text-muted-foreground text-sm">{order.customer_name}</p>
-                          )}
+                          <p className="text-sm font-medium text-foreground">Order #{order.id.slice(0, 8)}</p>
+                          <p className="text-xs text-muted-foreground">
+                            {new Date(order.created_at).toLocaleTimeString()}
+                          </p>
                         </div>
-                        <div className="text-right">
-                          <Badge variant={
-                            order.status === 'completed' ? 'default' :
-                            order.status === 'pending' ? 'secondary' :
-                            'outline'
-                          }>
-                            {order.status}
-                          </Badge>
-                          <p className="text-muted-foreground text-sm">${order.total_amount.toFixed(2)}</p>
-                        </div>
+                        <Badge variant="secondary">{order.status}</Badge>
                       </div>
                     ))}
                   </div>
                 ) : (
-                  <div className="text-muted-foreground text-center py-8">
-                    No orders yet. Orders will appear here when customers start placing them.
+                  <div className="text-center py-8 text-muted-foreground">
+                    <ShoppingCart className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                    <p>No orders yet today</p>
                   </div>
                 )}
               </CardContent>
@@ -710,56 +692,111 @@ const Dashboard = () => {
     }
   };
 
-  // Main dashboard render
+  // Three Panel Dashboard Layout - Matching the NotebookLM Design
   return (
-    <div className="min-h-screen bg-background flex">
-      {/* Sidebar */}
-      <div className="w-64 bg-muted/5 border-r border-muted/20 flex flex-col">
-        <div className="p-6 border-b border-muted/20">
-          <h2 className="text-lg font-semibold text-foreground truncate">{businessProfile.name}</h2>
-          <p className="text-sm text-muted-foreground truncate">{businessProfile.description || 'Restaurant Management System'}</p>
+    <div className="min-h-screen bg-background p-4">
+      <div className="max-w-7xl mx-auto h-[calc(100vh-2rem)] flex gap-4">
+        
+        {/* Left Panel - Navigation (Rounded) */}
+        <div className="w-64 bg-card rounded-2xl border border-border/50 p-4 flex flex-col shadow-sm">
+          <div className="mb-6">
+            <h2 className="text-lg font-semibold text-foreground">{businessProfile.name}</h2>
+            <p className="text-sm text-muted-foreground">Restaurant Dashboard</p>
+          </div>
+          
+          <nav className="flex-1 space-y-2">
+            {navigationItems.map((item) => {
+              const Icon = item.icon;
+              return (
+                <button
+                  key={item.id}
+                  onClick={() => setActiveSection(item.id)}
+                  className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                    activeSection === item.id
+                      ? 'bg-primary text-primary-foreground'
+                      : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
+                  }`}
+                >
+                  <Icon className="h-4 w-4" />
+                  {item.label}
+                </button>
+              );
+            })}
+          </nav>
+          
+          <div className="pt-4 border-t border-border/50 mt-auto">
+            <button
+              onClick={handleLogout}
+              className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors"
+            >
+              <LogOut className="h-4 w-4" />
+              Logout
+            </button>
+          </div>
         </div>
 
-        <nav className="flex-1 p-4 space-y-2">
-          {navigationItems.map((item) => {
-            const Icon = item.icon;
-            const isActive = activeSection === item.id;
-            
-            return (
-              <Button
-                key={item.id}
-                variant={isActive ? "secondary" : "ghost"}
-                className={`w-full justify-start ${
-                  isActive 
-                    ? 'bg-primary/10 text-primary hover:bg-primary/20' 
-                    : 'text-muted-foreground hover:text-foreground hover:bg-muted/10'
-                }`}
-                onClick={() => setActiveSection(item.id)}
-              >
-                <Icon className="mr-3 h-4 w-4" />
-                {item.label}
-              </Button>
-            );
-          })}
-        </nav>
-
-        <div className="p-4 border-t border-muted/20">
-          <Button
-            variant="ghost"
-            className="w-full justify-start text-muted-foreground hover:text-foreground hover:bg-muted/10"
-            onClick={handleLogout}
-          >
-            <LogOut className="mr-3 h-4 w-4" />
-            Logout
-          </Button>
+        {/* Center Panel - Main Content (Rounded) */}
+        <div className="flex-1 bg-card rounded-2xl border border-border/50 p-6 overflow-hidden shadow-sm">
+          {renderMainContent()}
         </div>
-      </div>
 
-      {/* Main Content */}
-      <div className="flex-1 flex flex-col">
-        <main className="flex-1 p-6">
-          {renderDashboardContent()}
-        </main>
+        {/* Right Panel - Analytics/Stats (Rounded) */}
+        <div className="w-80 bg-card rounded-2xl border border-border/50 p-4 flex flex-col shadow-sm">
+          <div className="mb-6">
+            <h3 className="text-lg font-semibold text-foreground">Quick Stats</h3>
+            <p className="text-sm text-muted-foreground">Live business overview</p>
+          </div>
+          
+          <div className="space-y-4 flex-1">
+            <Card className="border border-border/30">
+              <CardContent className="p-3">
+                <div className="text-center">
+                  <p className="text-xs text-muted-foreground">Today's Revenue</p>
+                  <p className="text-lg font-bold text-foreground">
+                    ${todayOrders.reduce((sum, order) => sum + order.total_amount, 0).toFixed(2)}
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="border border-border/30">
+              <CardContent className="p-3">
+                <div className="text-center">
+                  <p className="text-xs text-muted-foreground">Active Tables</p>
+                  <p className="text-lg font-bold text-foreground">
+                    {tables.filter(t => t.is_active).length}/{tables.length}
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="border border-border/30">
+              <CardContent className="p-3">
+                <div className="text-center">
+                  <p className="text-xs text-muted-foreground">Pending Orders</p>
+                  <p className="text-lg font-bold text-foreground">
+                    {orders.filter(o => o.status === 'pending').length}
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+
+            <div className="mt-6">
+              <h4 className="text-sm font-medium text-foreground mb-3">Recent Activity</h4>
+              <div className="space-y-2">
+                {orders.slice(0, 3).map((order) => (
+                  <div key={order.id} className="text-xs p-2 bg-muted/50 rounded-lg">
+                    <p className="text-foreground font-medium">Order #{order.id.slice(0, 6)}</p>
+                    <p className="text-muted-foreground">${order.total_amount.toFixed(2)} • {order.status}</p>
+                  </div>
+                ))}
+                {orders.length === 0 && (
+                  <p className="text-xs text-muted-foreground text-center py-4">No recent activity</p>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );
