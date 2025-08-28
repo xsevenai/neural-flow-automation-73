@@ -272,12 +272,31 @@ const Auth = () => {
       } else {
         // Check for temporary business data from signup
         const tempBusinessData = localStorage.getItem('tempBusinessData');
+        const tempAdminData = localStorage.getItem('tempAdminData');
         
         if (tempBusinessData && !isLogin) {
-          // User just signed up, create business profile
+          // User just signed up, create both business and admin profiles
           try {
             const businessData = JSON.parse(tempBusinessData);
+            const adminData = tempAdminData ? JSON.parse(tempAdminData) : null;
             
+            // Create admin profile first
+            if (adminData) {
+              const { error: adminError } = await supabase
+                .from('profiles')
+                .insert({
+                  user_id: user.id,
+                  full_name: adminData.ownerName,
+                  email: adminData.ownerEmail,
+                  phone: businessData.businessPhone || null
+                });
+
+              if (adminError) {
+                console.error('Error creating admin profile:', adminError);
+              }
+            }
+
+            // Create business profile
             const { error: profileError } = await supabase
               .from('businesses')
               .insert({
@@ -285,7 +304,15 @@ const Auth = () => {
                 name: businessData.businessName,
                 slug: businessData.businessName.toLowerCase().replace(/\s+/g, '-'),
                 category: businessData.businessType,
-                description: businessData.businessEmail
+                description: businessData.businessEmail,
+                contact_info: {
+                  email: businessData.businessEmail,
+                  phone: businessData.businessPhone,
+                  address: businessData.businessAddress,
+                  city: businessData.businessCity,
+                  state: businessData.businessState,
+                  country: businessData.businessCountry
+                }
               });
 
             if (profileError) {
@@ -316,19 +343,21 @@ const Auth = () => {
             }
 
             localStorage.removeItem('tempBusinessData');
+            localStorage.removeItem('tempAdminData');
             
             toast({
-              title: "Business Setup Complete!",
-              description: "Welcome to X-SevenAI! Your business profile has been created.",
+              title: "Setup Complete!",
+              description: "Welcome to X-SevenAI! Your business and admin profile have been created.",
             });
             
             navigate('/dashboard');
           } catch (error) {
-            console.error('Error creating business profile:', error);
+            console.error('Error creating profiles:', error);
             localStorage.removeItem('tempBusinessData');
+            localStorage.removeItem('tempAdminData');
             toast({
               title: "Setup Error",
-              description: "Failed to create business profile. Please try again.",
+              description: "Failed to create profiles. Please try again.",
               variant: "destructive",
             });
           }
@@ -351,9 +380,29 @@ const Auth = () => {
   const createBusinessProfile = async (user: SupabaseUser) => {
     try {
       const tempBusinessData = localStorage.getItem('tempBusinessData');
+      const tempAdminData = localStorage.getItem('tempAdminData');
+      
       if (tempBusinessData) {
         const businessData = JSON.parse(tempBusinessData);
+        const adminData = tempAdminData ? JSON.parse(tempAdminData) : null;
         
+        // Create admin profile first
+        if (adminData) {
+          const { error: adminError } = await supabase
+            .from('profiles')
+            .insert({
+              user_id: user.id,
+              full_name: adminData.ownerName,
+              email: adminData.ownerEmail,
+              phone: businessData.businessPhone || null
+            });
+
+          if (adminError) {
+            console.error('Error creating admin profile:', adminError);
+          }
+        }
+
+        // Create business profile
         const { error: profileError } = await supabase
           .from('businesses')
           .insert({
@@ -361,7 +410,15 @@ const Auth = () => {
             name: businessData.businessName,
             slug: businessData.businessName.toLowerCase().replace(/\s+/g, '-'),
             category: businessData.businessType,
-            description: businessData.businessEmail
+            description: businessData.businessEmail,
+            contact_info: {
+              email: businessData.businessEmail,
+              phone: businessData.businessPhone,
+              address: businessData.businessAddress,
+              city: businessData.businessCity,
+              state: businessData.businessState,
+              country: businessData.businessCountry
+            }
           });
 
         if (profileError) {
@@ -392,20 +449,22 @@ const Auth = () => {
         }
 
         localStorage.removeItem('tempBusinessData');
+        localStorage.removeItem('tempAdminData');
         
         toast({
-          title: "Business Setup Complete!",
-          description: "Welcome to X-SevenAI! Your business profile has been created.",
+          title: "Setup Complete!",
+          description: "Welcome to X-SevenAI! Your business and admin profile have been created.",
         });
         
         navigate('/dashboard');
       }
     } catch (error) {
-      console.error('Error creating business profile:', error);
+      console.error('Error creating profiles:', error);
       localStorage.removeItem('tempBusinessData');
+      localStorage.removeItem('tempAdminData');
       toast({
         title: "Setup Error",
-        description: "Failed to create business profile. Please try again.",
+        description: "Failed to create profiles. Please try again.",
         variant: "destructive",
       });
     }
@@ -534,7 +593,15 @@ const Auth = () => {
         businessState: businessState || null,
         businessCountry
       };
+      
+      // Store admin data separately
+      const adminData = {
+        ownerName,
+        ownerEmail
+      };
+      
       localStorage.setItem('tempBusinessData', JSON.stringify(businessData));
+      localStorage.setItem('tempAdminData', JSON.stringify(adminData));
 
       // Create auth user
       const { data: authData, error: authError } = await supabase.auth.signUp({
