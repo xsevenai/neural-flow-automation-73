@@ -198,6 +198,9 @@ const Auth = () => {
   const [isLogin, setIsLogin] = useState(false);
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [user, setUser] = useState<SupabaseUser | null>(null);
+  const [session, setSession] = useState<Session | null>(null);
+  const [businessProfile, setBusinessProfile] = useState<any>(null);
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -227,8 +230,18 @@ const Auth = () => {
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
+        console.log('Auth state change:', event, session?.user?.id);
         if (event === 'SIGNED_IN' && session) {
+          setSession(session);
+          setUser(session.user);
           await handleAuthSuccess(session.user);
+        } else if (event === 'SIGNED_OUT') {
+          console.log('User signed out');
+          setSession(null);
+          setUser(null);
+          setBusinessProfile(null);
+          setLoading(false);
+          navigate('/auth');
         }
       }
     );
@@ -258,37 +271,50 @@ const Auth = () => {
   };
 
   const handleAuthSuccess = async (user: SupabaseUser) => {
+    console.log('handleAuthSuccess called for user:', user.id);
     try {
       // Check if business profile exists
-      const { data: profile } = await supabase
+      console.log('Checking for business profile...');
+      const { data: profile, error: profileError } = await supabase
         .from('businesses')
         .select('*')
         .eq('user_id', user.id)
         .maybeSingle();
 
+      if (profileError) {
+        console.error('Error fetching business profile:', profileError);
+        throw profileError;
+      }
+
+      console.log('Business profile found:', profile);
+      
       if (profile) {
         // User has business profile, redirect to dashboard
+        console.log('Redirecting to dashboard...');
+        setLoading(false);
         navigate('/dashboard');
       } else {
         // Check for temporary business data from signup
         const tempBusinessData = localStorage.getItem('tempBusinessData');
         const tempAdminData = localStorage.getItem('tempAdminData');
         
+        console.log('No business profile found. Temp data:', !!tempBusinessData);
+        
         if (tempBusinessData && !isLogin) {
           // User just signed up, create both business and admin profiles
+          console.log('Creating business and admin profiles...');
           try {
             const businessData = JSON.parse(tempBusinessData);
             const adminData = tempAdminData ? JSON.parse(tempAdminData) : null;
             
             // Create admin profile first
             if (adminData) {
+              console.log('Creating admin profile...');
               const { error: adminError } = await supabase
                 .from('profiles')
                 .insert({
                   user_id: user.id,
-                  full_name: adminData.ownerName,
                   email: adminData.ownerEmail,
-                  phone: businessData.businessPhone || null
                 });
 
               if (adminError) {
@@ -297,6 +323,7 @@ const Auth = () => {
             }
 
             // Create business profile
+            console.log('Creating business profile...');
             const { error: profileError } = await supabase
               .from('businesses')
               .insert({
@@ -316,6 +343,7 @@ const Auth = () => {
               });
 
             if (profileError) {
+              console.error('Error creating business profile:', profileError);
               throw profileError;
             }
 
@@ -345,16 +373,19 @@ const Auth = () => {
             localStorage.removeItem('tempBusinessData');
             localStorage.removeItem('tempAdminData');
             
+            console.log('Business and admin profiles created successfully');
             toast({
               title: "Setup Complete!",
               description: "Welcome! Your business and admin profile have been created.",
             });
             
+            setLoading(false);
             navigate('/dashboard');
           } catch (error) {
             console.error('Error creating profiles:', error);
             localStorage.removeItem('tempBusinessData');
             localStorage.removeItem('tempAdminData');
+            setLoading(false);
             toast({
               title: "Setup Error",
               description: "Failed to create profiles. Please try again.",
@@ -363,6 +394,8 @@ const Auth = () => {
           }
         } else if (isLogin) {
           // Logged in but no business profile, show error
+          console.log('User logged in but no business profile found');
+          setLoading(false);
           toast({
             title: "Account Setup Required",
             description: "Please complete your business setup first.",
@@ -370,10 +403,14 @@ const Auth = () => {
           });
           setIsLogin(false);
           setCurrentStep(1);
+        } else {
+          console.log('No business profile and no temp data - staying on auth page');
+          setLoading(false);
         }
       }
     } catch (error) {
-      console.error('Error checking business profile:', error);
+      console.error('Error in handleAuthSuccess:', error);
+      setLoading(false);
     }
   };
 
@@ -499,6 +536,7 @@ const Auth = () => {
     setLoading(true);
     
     try {
+      console.log('Attempting login with email:', loginEmail);
       const { data, error } = await supabase.auth.signInWithPassword({
         email: loginEmail,
         password: loginPassword,
@@ -508,21 +546,24 @@ const Auth = () => {
         throw error;
       }
 
+      console.log('Login successful, user:', data.user);
+      
       toast({
         title: "Welcome back!",
         description: "Successfully signed in",
       });
       
-      // handleAuthSuccess will be called by the auth state change listener
+      // The auth state change listener will handle the redirect
+      // Keep loading state until redirect happens
+      
     } catch (error: any) {
       console.error('Login error:', error);
+      setLoading(false); // Only reset loading on error
       toast({
         title: "Login Failed",
         description: error.message || "Invalid email or password",
         variant: "destructive",
       });
-    } finally {
-      setLoading(false);
     }
   };
 
