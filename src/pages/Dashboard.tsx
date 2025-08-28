@@ -473,7 +473,7 @@ const Dashboard = () => {
               <p className="text-muted-foreground mb-6">Configure weekly open/close times</p>
             </div>
 
-            <Card className="neural-card border-border">
+            <Card className="border border-muted/20 bg-muted/5">
               <CardContent className="p-6">
                 <div className="space-y-4 max-h-96 overflow-y-auto">
                   {hoursDisplay.map(({ day, isOpen, openTime, closeTime }) => (
@@ -494,7 +494,7 @@ const Dashboard = () => {
                           type="time"
                           value={isOpen ? openTime : ''}
                           disabled={!isOpen}
-                          className="w-24 neural-input"
+                          className="w-24 border-muted/30 bg-background/50"
                           onChange={(e) => updateWorkingHour(day, 'open_time', e.target.value)}
                         />
                         <span className="text-muted-foreground">to</span>
@@ -502,23 +502,23 @@ const Dashboard = () => {
                           type="time"
                           value={isOpen ? closeTime : ''}
                           disabled={!isOpen}
-                          className="w-24 neural-input"
+                          className="w-24 border-muted/30 bg-background/50"
                           onChange={(e) => updateWorkingHour(day, 'close_time', e.target.value)}
                         />
                       </div>
                     </div>
                   ))}
                 </div>
-                <div className="flex gap-3 mt-6 pt-4 border-t border-border">
+                <div className="flex gap-3 mt-6 pt-4 border-t border-muted/20">
                   <Button 
                     variant="outline" 
-                    className="neural-outline-button"
+                    className="border-muted/30 hover:bg-muted/50"
                     onClick={() => setWorkingHours([])}
                   >
                     Reset
                   </Button>
                   <Button 
-                    className="neural-button"
+                    className="bg-primary hover:bg-primary/90 text-primary-foreground"
                     onClick={saveWorkingHours}
                   >
                     ✓ Save Changes
@@ -537,13 +537,13 @@ const Dashboard = () => {
               <p className="text-muted-foreground mb-6">Manage restaurant tables and generate QR codes</p>
             </div>
 
-            <Card className="neural-card border-border">
+            <Card className="border border-muted/20 bg-muted/5">
               <CardContent className="p-6">
                 <div className="mb-6">
                   <h3 className="text-foreground font-medium mb-4">Restaurant Tables ({tables.length})</h3>
                   <div className="grid grid-cols-6 gap-4 max-h-64 overflow-y-auto">
                     {tables.map((table) => (
-                      <div key={table.id} className="neural-card rounded-lg p-4 text-center border border-border">
+                      <div key={table.id} className="border border-muted/30 bg-background/50 rounded-lg p-4 text-center">
                         <div className="text-foreground font-medium mb-1">{table.table_number}</div>
                         <div className="text-primary text-sm">Seats {table.capacity}</div>
                         <div className="text-muted-foreground text-xs mt-1">Available</div>
@@ -552,7 +552,7 @@ const Dashboard = () => {
                   </div>
                 </div>
                 <Button 
-                  className="neural-button"
+                  className="bg-primary hover:bg-primary/90 text-primary-foreground"
                   onClick={generateQRCodes}
                 >
                   🔗 Generate QR Codes
@@ -570,7 +570,7 @@ const Dashboard = () => {
               <p className="text-muted-foreground mb-6">Manage menu categories and items</p>
             </div>
 
-            <Card className="neural-card border-border">
+            <Card className="border border-muted/20 bg-muted/5">
               <CardContent className="p-6">
                 <div className="mb-6">
                   <h3 className="text-foreground font-medium mb-4">Menu Categories</h3>
@@ -579,11 +579,11 @@ const Dashboard = () => {
                       placeholder="Enter category name"
                       value={newCategoryName}
                       onChange={(e) => setNewCategoryName(e.target.value)}
-                      className="neural-input"
+                      className="border-muted/30 bg-background/50"
                     />
                     <Button 
                       onClick={addMenuCategory}
-                      className="neural-button"
+                      className="bg-primary hover:bg-primary/90 text-primary-foreground"
                     >
                       <Plus className="h-4 w-4 mr-1" />
                       Add
@@ -593,7 +593,7 @@ const Dashboard = () => {
                   {menuCategories.length > 0 ? (
                     <div className="space-y-2">
                       {menuCategories.map((category) => (
-                        <div key={category.id} className="flex items-center justify-between neural-card rounded-lg p-3">
+                        <div key={category.id} className="flex items-center justify-between border border-muted/30 bg-background/50 rounded-lg p-3">
                           <div>
                             <span className="text-foreground font-medium">{category.name}</span>
                             {category.description && (
@@ -639,34 +639,40 @@ const Dashboard = () => {
               <p className="text-muted-foreground mb-6">Get help managing your restaurant business</p>
             </div>
 
-            <Card className="neural-card border-border flex-1">
+            <Card className="border border-muted/20 bg-muted/5 flex-1">
               <CardContent className="p-0 h-full flex flex-col">
-                <div className="flex-1 p-6">
-                  <div className="text-muted-foreground text-center">
-                    AI chat feature coming soon. This will help you with:
-                    <ul className="mt-4 space-y-2 text-left max-w-md mx-auto">
-                      <li>• Menu optimization suggestions</li>
-                      <li>• Business analytics insights</li>
-                      <li>• Customer service guidance</li>
-                      <li>• Operational improvements</li>
-                    </ul>
+                <div className="flex-1 p-6 min-h-[400px] max-h-[500px] overflow-y-auto">
+                  <div className="space-y-4">
+                    <div className="flex justify-start">
+                      <div className="max-w-[80%] p-3 rounded-lg bg-muted text-muted-foreground">
+                        Hello! I'm your AI assistant. I can help you with menu optimization, business analytics, customer service guidance, and operational improvements for {businessProfile.name}.
+                      </div>
+                    </div>
                   </div>
                 </div>
-                <div className="p-4 border-t border-border">
+                <div className="p-4 border-t border-muted/20">
                   <div className="flex gap-2">
                     <Textarea
-                      placeholder="Type a message to your AI assistant..."
+                      placeholder="Ask me anything about your restaurant business..."
                       value={chatMessage}
                       onChange={(e) => setChatMessage(e.target.value)}
-                      className="neural-input resize-none"
+                      className="border-muted/30 bg-background/50 resize-none"
                       rows={1}
-                      disabled
                     />
                     <Button 
-                      className="neural-button"
-                      disabled
+                      className="bg-primary hover:bg-primary/90 text-primary-foreground"
+                      onClick={() => {
+                        if (chatMessage.trim()) {
+                          // TODO: Implement chat functionality
+                          toast({
+                            title: "Chat Feature",
+                            description: "AI chat functionality will be implemented soon",
+                          });
+                          setChatMessage('');
+                        }
+                      }}
                     >
-                      ➤
+                      Send
                     </Button>
                   </div>
                 </div>
@@ -687,60 +693,60 @@ const Dashboard = () => {
               <p className="text-muted-foreground mb-6">Welcome back to {businessProfile.name}</p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              <Card className="neural-card border-border">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <Card className="border border-muted/20 bg-muted/5">
                 <CardHeader>
-                  <CardTitle className="text-foreground flex items-center gap-2">
-                    <ShoppingCart className="h-5 w-5 text-primary" />
+                  <CardTitle className="text-foreground flex items-center gap-2 text-base">
+                    <ShoppingCart className="h-4 w-4 text-primary" />
                     Orders Today
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-3xl font-bold text-foreground">{todayOrders.length}</div>
+                  <div className="text-2xl font-bold text-foreground">{todayOrders.length}</div>
                   <p className="text-primary text-sm">
                     {todayOrders.filter(o => o.status === 'pending').length} pending
                   </p>
                 </CardContent>
               </Card>
 
-              <Card className="neural-card border-border">
+              <Card className="border border-muted/20 bg-muted/5">
                 <CardHeader>
-                  <CardTitle className="text-foreground flex items-center gap-2">
-                    <LayoutGrid className="h-5 w-5 text-accent" />
+                  <CardTitle className="text-foreground flex items-center gap-2 text-base">
+                    <LayoutGrid className="h-4 w-4 text-muted-foreground" />
                     Tables
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-3xl font-bold text-foreground">{activeTables}/{totalTables}</div>
-                  <p className="text-accent text-sm">{occupancyRate}% capacity</p>
+                  <div className="text-2xl font-bold text-foreground">{activeTables}/{totalTables}</div>
+                  <p className="text-muted-foreground text-sm">{occupancyRate}% capacity</p>
                 </CardContent>
               </Card>
 
-              <Card className="neural-card border-border">
+              <Card className="border border-muted/20 bg-muted/5">
                 <CardHeader>
-                  <CardTitle className="text-foreground flex items-center gap-2">
-                    <UtensilsCrossed className="h-5 w-5 text-neural-violet" />
+                  <CardTitle className="text-foreground flex items-center gap-2 text-base">
+                    <UtensilsCrossed className="h-4 w-4 text-muted-foreground" />
                     Menu Items
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-3xl font-bold text-foreground">{menuItems.length}</div>
-                  <p className="text-neural-violet text-sm">
+                  <div className="text-2xl font-bold text-foreground">{menuItems.length}</div>
+                  <p className="text-muted-foreground text-sm">
                     {menuItems.filter(item => item.is_available).length} available
                   </p>
                 </CardContent>
               </Card>
             </div>
 
-            <Card className="neural-card border-border">
+            <Card className="border border-muted/20 bg-muted/5">
               <CardHeader>
-                <CardTitle className="text-foreground">Recent Orders</CardTitle>
+                <CardTitle className="text-foreground text-base">Recent Orders</CardTitle>
               </CardHeader>
               <CardContent>
                 {orders.slice(0, 5).length > 0 ? (
                   <div className="space-y-3">
                     {orders.slice(0, 5).map((order) => (
-                      <div key={order.id} className="flex items-center justify-between neural-card rounded-lg p-3">
+                      <div key={order.id} className="flex items-center justify-between border border-muted/30 bg-background/50 rounded-lg p-3">
                         <div>
                           <span className="text-foreground font-medium">#{order.order_number}</span>
                           {order.customer_name && (
@@ -773,20 +779,20 @@ const Dashboard = () => {
   };
 
   return (
-    <div className="h-screen w-full bg-background p-4 overflow-hidden">
-      <div className="grid grid-cols-12 gap-4 h-full">
+    <div className="h-screen w-full bg-background p-3 overflow-hidden">
+      <div className="grid grid-cols-12 gap-3 h-full">
         
         {/* Left Panel - Navigation */}
         <div className="col-span-3 h-full">
-          <div className="neural-card border-border h-full overflow-hidden flex flex-col">
-            <div className="p-4 border-b border-border flex-shrink-0">
+          <div className="border border-muted/20 bg-muted/5 h-full overflow-hidden flex flex-col rounded-lg">
+            <div className="p-4 border-b border-muted/20 flex-shrink-0">
               <div className="flex items-center justify-between">
-                <h1 className="text-foreground text-xl font-semibold">{businessProfile.name}</h1>
+                <h1 className="text-foreground text-lg font-medium">{businessProfile.name}</h1>
                 <Button
                   variant="ghost"
                   size="icon"
                   onClick={handleLogout}
-                  className="text-muted-foreground hover:text-foreground"
+                  className="text-muted-foreground hover:text-foreground h-8 w-8"
                 >
                   <LogOut className="h-4 w-4" />
                 </Button>
@@ -795,25 +801,19 @@ const Dashboard = () => {
             </div>
             
             <div className="flex-1 p-3 overflow-y-auto">
-              <div className="space-y-2">
+              <div className="space-y-1">
                 {sidebarItems.map((item) => (
-                  <div key={item.title} className="mb-2">
+                  <div key={item.title}>
                     <div 
-                      className={`w-full rounded-lg p-3 transition-all duration-200 cursor-pointer ${
+                      className={`w-full rounded-md p-3 transition-all duration-200 cursor-pointer ${
                         isActive(item.section) 
-                          ? 'neural-card border-primary/30 text-foreground' 
-                          : 'text-muted-foreground hover:bg-accent/10 hover:text-foreground'
+                          ? 'bg-primary/10 border border-primary/20 text-foreground' 
+                          : 'text-muted-foreground hover:bg-muted/50 hover:text-foreground'
                       }`}
                       onClick={() => setActiveSection(item.section)}
                     >
                       <div className="flex items-start gap-3">
-                        <item.icon className={`h-5 w-5 mt-0.5 ${
-                          item.section === 'dashboard' ? 'text-primary' :
-                          item.section === 'chat' ? 'text-neural-cyan' :
-                          item.section === 'menu-management' ? 'text-primary' :
-                          item.section === 'table-management' ? 'text-accent' :
-                          'text-neural-violet'
-                        }`} />
+                        <item.icon className="h-4 w-4 mt-0.5 text-muted-foreground" />
                         <div className="flex-1 min-w-0">
                           <div className="font-medium text-sm">{item.title}</div>
                           <div className="text-xs text-muted-foreground mt-1 leading-tight">{item.subtitle}</div>
@@ -829,24 +829,23 @@ const Dashboard = () => {
 
         {/* Center Panel - Main Content */}
         <div className="col-span-6 h-full">
-          <div className="neural-card border-border h-full overflow-hidden flex flex-col">
+          <div className="border border-muted/20 bg-muted/5 h-full overflow-hidden flex flex-col rounded-lg">
             {/* Top Header */}
-            <div className="border-b border-border p-4 flex-shrink-0">
+            <div className="border-b border-muted/20 p-4 flex-shrink-0">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <div className="w-2 h-2 bg-primary rounded-full neural-pulse"></div>
                   <span className="text-foreground font-medium capitalize">{activeSection.replace('-', ' ')}</span>
                 </div>
                 
-                <div className="flex items-center gap-4">
-                  <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-foreground">
-                    <BarChart3 className="h-5 w-5" />
+                <div className="flex items-center gap-2">
+                  <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-foreground h-8 w-8">
+                    <BarChart3 className="h-4 w-4" />
                   </Button>
-                  <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-foreground">
-                    <Settings className="h-5 w-5" />
+                  <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-foreground h-8 w-8">
+                    <Settings className="h-4 w-4" />
                   </Button>
-                  <div className="w-8 h-8 bg-accent rounded-full flex items-center justify-center">
-                    <span className="text-accent-foreground text-sm font-medium">
+                  <div className="w-7 h-7 bg-primary/10 rounded-full flex items-center justify-center">
+                    <span className="text-primary text-xs font-medium">
                       {user?.email?.charAt(0).toUpperCase()}
                     </span>
                   </div>
@@ -855,7 +854,7 @@ const Dashboard = () => {
             </div>
 
             {/* Main Content Area */}
-            <div className="flex-1 p-6 overflow-auto">
+            <div className="flex-1 p-4 overflow-auto">
               <DashboardContent />
             </div>
           </div>
@@ -863,53 +862,63 @@ const Dashboard = () => {
 
         {/* Right Panel - Live & Notifications */}
         <div className="col-span-3 h-full">
-          <div className="neural-card border-border h-full overflow-hidden flex flex-col">
-            <div className="p-6 flex-1 overflow-y-auto">
+          <div className="border border-muted/20 bg-muted/5 h-full overflow-hidden flex flex-col rounded-lg">
+            <div className="p-4 flex-shrink-0 border-b border-muted/20">
+              <h2 className="text-foreground font-medium">Quick Actions</h2>
+            </div>
+            <div className="p-4 flex-1 overflow-y-auto">
               <div className="space-y-6">
-                <div className="flex items-center justify-between">
-                  <h2 className="text-foreground font-medium">Quick Actions</h2>
-                </div>
-
-                <div className="space-y-4">
+                <div className="space-y-2">
                   <Button 
-                    className="w-full neural-outline-button justify-start"
+                    variant="outline"
+                    className="w-full justify-start text-sm border-muted/30 hover:bg-muted/50"
                     onClick={() => setActiveSection('table-management')}
                   >
                     <LayoutGrid className="h-4 w-4 mr-2" />
                     Manage Tables
                   </Button>
                   <Button 
-                    className="w-full neural-outline-button justify-start"
+                    variant="outline"
+                    className="w-full justify-start text-sm border-muted/30 hover:bg-muted/50"
                     onClick={() => setActiveSection('menu-management')}
                   >
                     <UtensilsCrossed className="h-4 w-4 mr-2" />
                     Manage Menu
                   </Button>
                   <Button 
-                    className="w-full neural-outline-button justify-start"
+                    variant="outline"
+                    className="w-full justify-start text-sm border-muted/30 hover:bg-muted/50"
                     onClick={() => setActiveSection('hours')}
                   >
                     <Clock className="h-4 w-4 mr-2" />
                     Update Hours
                   </Button>
+                  <Button 
+                    variant="outline"
+                    className="w-full justify-start text-sm border-muted/30 hover:bg-muted/50"
+                    onClick={() => setActiveSection('chat')}
+                  >
+                    <MessageSquare className="h-4 w-4 mr-2" />
+                    AI Assistant
+                  </Button>
                 </div>
 
-                <div className="border-t border-border pt-6">
-                  <h3 className="text-foreground font-medium mb-4">Business Stats</h3>
-                  <div className="space-y-3">
-                    <div className="neural-card rounded-lg p-3">
+                <div className="border-t border-muted/20 pt-4">
+                  <h3 className="text-foreground font-medium mb-3 text-sm">Business Stats</h3>
+                  <div className="space-y-2">
+                    <div className="border border-muted/30 bg-background/50 rounded-lg p-3">
                       <div className="flex items-center justify-between">
                         <span className="text-muted-foreground text-sm">Categories</span>
                         <span className="text-foreground font-medium">{menuCategories.length}</span>
                       </div>
                     </div>
-                    <div className="neural-card rounded-lg p-3">
+                    <div className="border border-muted/30 bg-background/50 rounded-lg p-3">
                       <div className="flex items-center justify-between">
                         <span className="text-muted-foreground text-sm">Menu Items</span>
                         <span className="text-foreground font-medium">{menuItems.length}</span>
                       </div>
                     </div>
-                    <div className="neural-card rounded-lg p-3">
+                    <div className="border border-muted/30 bg-background/50 rounded-lg p-3">
                       <div className="flex items-center justify-between">
                         <span className="text-muted-foreground text-sm">Total Orders</span>
                         <span className="text-foreground font-medium">{orders.length}</span>
