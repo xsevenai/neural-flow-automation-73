@@ -307,18 +307,45 @@ const Auth = () => {
         .eq('user_id', user.id)
         .maybeSingle();
 
+      console.log('Profile query result:', { profile, profileError });
+
       if (profileError) {
         console.error('Error fetching business profile:', profileError);
-        throw profileError;
+        setLoading(false);
+        toast({
+          title: "Database Error",
+          description: "Failed to load business profile. Please try again.",
+          variant: "destructive",
+        });
+        return;
       }
 
-      console.log('Business profile found:', profile);
+      console.log('Business profile found:', !!profile);
       
       if (profile) {
         // User has business profile, redirect to dashboard
-        console.log('Redirecting to dashboard...');
+        console.log('Profile exists, redirecting to dashboard...');
+        console.log('Navigation function exists:', typeof navigate);
+        console.log('Current location before navigate:', window.location.href);
         setLoading(false);
-        navigate('/dashboard');
+        
+        // Force navigation with window.location as backup
+        try {
+          navigate('/dashboard');
+          console.log('Navigate called successfully');
+          
+          // Backup navigation after a small delay
+          setTimeout(() => {
+            if (window.location.pathname === '/auth') {
+              console.log('Backup navigation triggered');
+              window.location.href = '/dashboard';
+            }
+          }, 1000);
+        } catch (navError) {
+          console.error('Navigate failed, using window.location:', navError);
+          window.location.href = '/dashboard';
+        }
+        return;
       } else {
         // Check for temporary business data from signup
         const tempBusinessData = localStorage.getItem('tempBusinessData');
