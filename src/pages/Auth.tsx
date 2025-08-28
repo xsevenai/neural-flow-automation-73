@@ -356,100 +356,148 @@ const Auth = () => {
         
         navigate('/dashboard');
         return;
-  };
-
-  const createBusinessProfile = async (user: SupabaseUser) => {
-    try {
+      }
+      
+      // No business profile found - handle new user setup
+      console.log('👤 No business profile found - checking for signup data');
+      
       const tempBusinessData = localStorage.getItem('tempBusinessData');
       const tempAdminData = localStorage.getItem('tempAdminData');
       
-      if (tempBusinessData) {
-        const businessData = JSON.parse(tempBusinessData);
-        const adminData = tempAdminData ? JSON.parse(tempAdminData) : null;
-        
-        // Create admin profile first
-        if (adminData) {
-          const { error: adminError } = await supabase
-            .from('profiles')
-            .insert({
-              user_id: user.id,
-              full_name: adminData.ownerName,
-              email: adminData.ownerEmail,
-              phone: businessData.businessPhone || null
-            });
-
-          if (adminError) {
-            console.error('Error creating admin profile:', adminError);
-          }
-        }
-
-        // Create business profile
-        const { error: profileError } = await supabase
-          .from('businesses')
-          .insert({
-            user_id: user.id,
-            name: businessData.businessName,
-            slug: businessData.businessName.toLowerCase().replace(/\s+/g, '-'),
-            category: businessData.businessType,
-            description: businessData.businessEmail,
-            contact_info: {
-              email: businessData.businessEmail,
-              phone: businessData.businessPhone,
-              address: businessData.businessAddress,
-              city: businessData.businessCity,
-              state: businessData.businessState,
-              country: businessData.businessCountry
-            }
-          });
-
-        if (profileError) {
-          throw profileError;
-        }
-
-        // Get the created business profile
-        const { data: newProfile } = await supabase
-          .from('businesses')
-          .select('id')
-          .eq('user_id', user.id)
-          .single();
-
-        if (newProfile) {
-          // Create default working hours
-          const daysOfWeek = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
-          const workingHoursData = daysOfWeek.map(day => ({
-            business_id: newProfile.id,
-            day_of_week: day,
-            open_time: day === 'Saturday' || day === 'Sunday' ? '10:00' : '09:00',
-            close_time: day === 'Saturday' || day === 'Sunday' ? '23:00' : '22:00',
-            is_open: true
-          }));
-
-          await supabase
-            .from('working_hours')
-            .insert(workingHoursData);
-        }
-
-        localStorage.removeItem('tempBusinessData');
-        localStorage.removeItem('tempAdminData');
-        
+      if (tempBusinessData && !isLogin) {
+        // New user from signup process
+        console.log('🆕 Creating business profile for new user');
+        await createBusinessProfileFromSignup(user, tempBusinessData, tempAdminData);
+      } else if (isLogin) {
+        // Existing user trying to login but no business profile
+        console.log('⚠️ Login attempt but no business profile exists');
+        setLoading(false);
         toast({
-          title: "Setup Complete!",
-          description: "Welcome! Your business and admin profile have been created.",
+          title: "Account Setup Required",
+          description: "Please complete your business setup first.",
+          variant: "destructive",
         });
-        
-        navigate('/dashboard');
+        setIsLogin(false);
+        setCurrentStep(1);
+      } else {
+        // Unknown state
+        console.log('❓ Unknown state - staying on auth page');
+        setLoading(false);
       }
-    } catch (error) {
-      console.error('Error creating profiles:', error);
-      localStorage.removeItem('tempBusinessData');
-      localStorage.removeItem('tempAdminData');
+      
+    } catch (error: any) {
+      console.error('💥 Error in handleAuthSuccess:', error);
+      setLoading(false);
       toast({
-        title: "Setup Error",
-        description: "Failed to create profiles. Please try again.",
+        title: "Authentication Error",
+        description: error.message || "Failed to complete authentication",
         variant: "destructive",
       });
     }
   };
+
+  const createBusinessProfileFromSignup = async (user: SupabaseUser, tempBusinessData: string, tempAdminData: string | null) => {
+    try {
+      console.log('🏗️ Creating business and admin profiles...');
+      
+      const businessData = JSON.parse(tempBusinessData);
+      const adminData = tempAdminData ? JSON.parse(tempAdminData) : null;
+      
+      // Create admin profile first
+      if (adminData) {
+        console.log('👨‍💼 Creating admin profile...');
+        const { error: adminError } = await supabase
+          .from('profiles')
+          .insert({
+            user_id: user.id,
+            email: adminData.ownerEmail,
+          });
+
+        if (adminError) {
+          console.error('❌ Error creating admin profile:', adminError);
+          // Continue anyway - admin profile is optional
+        }
+      }
+
+      // Create business profile
+      console.log('🏢 Creating business profile...');
+      const { data: newBusiness, error: profileError } = await supabase
+        .from('businesses')
+        .insert({
+          user_id: user.id,
+          name: businessData.businessName,
+          slug: businessData.businessName.toLowerCase().replace(/\s+/g, '-'),
+          category: businessData.businessType,
+          description: businessData.businessEmail,
+          contact_info: {
+            email: businessData.businessEmail,
+            phone: businessData.businessPhone,
+            address: businessData.businessAddress,
+            city: businessData.businessCity,
+            state: businessData.businessState,
+            country: businessData.businessCountry
+          }
+        })
+        .select()
+        .single();
+
+      if (profileError) {
+        console.error('❌ Error creating business profile:', profileError);
+        throw new Error(`Failed to create business profile: ${profileError.message}`);
+      }
+
+      console.log('✅ Business profile created successfully');
+
+      // Create default working hours
+      if (newBusiness) {
+        console.log('⏰ Creating default working hours...');
+        const daysOfWeek = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
+        const workingHoursData = daysOfWeek.map(day => ({
+          business_id: newBusiness.id,
+          day_of_week: day,
+          open_time: day === 'saturday' || day === 'sunday' ? '10:00' : '09:00',
+          close_time: day === 'saturday' || day === 'sunday' ? '23:00' : '22:00',
+          is_open: true
+        }));
+
+        await supabase
+          .from('working_hours')
+          .insert(workingHoursData);
+      }
+
+      // Clean up temporary data
+      localStorage.removeItem('tempBusinessData');
+      localStorage.removeItem('tempAdminData');
+      
+      console.log('🎉 Business setup complete - redirecting to dashboard');
+      setBusinessProfile(newBusiness);
+      setLoading(false);
+      
+      toast({
+        title: "Welcome to your business!",
+        description: `${businessData.businessName} is ready to go!`,
+      });
+      
+      navigate('/dashboard');
+      
+    } catch (error: any) {
+      console.error('💥 Error creating business profile:', error);
+      localStorage.removeItem('tempBusinessData');
+      localStorage.removeItem('tempAdminData');
+      setLoading(false);
+      
+      toast({
+        title: "Setup Failed",
+        description: error.message || "Failed to create business profile",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const createBusinessProfile = async (user: SupabaseUser) => {
+    await createBusinessProfileFromSignup(user, localStorage.getItem('tempBusinessData') || '{}', localStorage.getItem('tempAdminData'));
+  };
+
 
   const businessTypes = [
     { value: "Restaurant", label: "Restaurant" },
