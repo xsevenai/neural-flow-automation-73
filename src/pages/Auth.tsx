@@ -225,16 +225,21 @@ const Auth = () => {
 
   // Check if user is already authenticated
   useEffect(() => {
-    checkExistingSession();
+    console.log('Auth component mounted, checking auth state...');
+    let mounted = true;
     
-    // Listen for auth changes
+    // Set up auth state listener FIRST
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         console.log('Auth state change:', event, session?.user?.id);
+        if (!mounted) return;
+        
         if (event === 'SIGNED_IN' && session) {
+          console.log('User signed in via auth state change');
           setSession(session);
           setUser(session.user);
-          await handleAuthSuccess(session.user);
+          // Call handleAuthSuccess but don't await to avoid blocking
+          handleAuthSuccess(session.user).catch(console.error);
         } else if (event === 'SIGNED_OUT') {
           console.log('User signed out');
           setSession(null);
@@ -246,12 +251,43 @@ const Auth = () => {
       }
     );
 
-    return () => subscription.unsubscribe();
-  }, []);
+    // Then check for existing session
+    const checkAuth = async () => {
+      try {
+        console.log('Checking existing session...');
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!mounted) return;
+        
+        if (session) {
+          console.log('Found existing session:', session.user.id);
+          setSession(session);
+          setUser(session.user);
+          await handleAuthSuccess(session.user);
+        } else {
+          console.log('No existing session found');
+          setLoading(false);
+        }
+      } catch (error) {
+        console.error('Error checking session:', error);
+        if (mounted) {
+          setLoading(false);
+        }
+      }
+    };
+
+    checkAuth();
+
+    return () => {
+      console.log('Cleaning up auth subscription');
+      mounted = false;
+      subscription.unsubscribe();
+    };
+  }, [navigate]);
 
   // Check URL hash for login or signup
   useEffect(() => {
     const hash = window.location.hash;
+    console.log('URL hash:', hash);
     if (hash === '#login') {
       setIsLogin(true);
     } else if (hash === '#signup') {
@@ -259,16 +295,6 @@ const Auth = () => {
     }
   }, []);
 
-  const checkExistingSession = async () => {
-    try {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session) {
-        await handleAuthSuccess(session.user);
-      }
-    } catch (error) {
-      console.error('Error checking session:', error);
-    }
-  };
 
   const handleAuthSuccess = async (user: SupabaseUser) => {
     console.log('handleAuthSuccess called for user:', user.id);
@@ -543,18 +569,19 @@ const Auth = () => {
       });
 
       if (error) {
+        console.error('Login error from Supabase:', error);
         throw error;
       }
 
-      console.log('Login successful, user:', data.user);
+      console.log('Login successful, user:', data.user?.id);
+      console.log('Session:', !!data.session);
       
       toast({
         title: "Welcome back!",
         description: "Successfully signed in",
       });
       
-      // The auth state change listener will handle the redirect
-      // Keep loading state until redirect happens
+      // Don't set loading to false here - let the auth state change handle it
       
     } catch (error: any) {
       console.error('Login error:', error);
