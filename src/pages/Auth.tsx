@@ -348,6 +348,69 @@ const Auth = () => {
     }
   };
 
+  const createBusinessProfile = async (user: SupabaseUser) => {
+    try {
+      const tempBusinessData = localStorage.getItem('tempBusinessData');
+      if (tempBusinessData) {
+        const businessData = JSON.parse(tempBusinessData);
+        
+        const { error: profileError } = await supabase
+          .from('businesses')
+          .insert({
+            user_id: user.id,
+            name: businessData.businessName,
+            slug: businessData.businessName.toLowerCase().replace(/\s+/g, '-'),
+            category: businessData.businessType,
+            description: businessData.businessEmail
+          });
+
+        if (profileError) {
+          throw profileError;
+        }
+
+        // Get the created business profile
+        const { data: newProfile } = await supabase
+          .from('businesses')
+          .select('id')
+          .eq('user_id', user.id)
+          .single();
+
+        if (newProfile) {
+          // Create default working hours
+          const daysOfWeek = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+          const workingHoursData = daysOfWeek.map(day => ({
+            business_id: newProfile.id,
+            day_of_week: day,
+            open_time: day === 'Saturday' || day === 'Sunday' ? '10:00' : '09:00',
+            close_time: day === 'Saturday' || day === 'Sunday' ? '23:00' : '22:00',
+            is_open: true
+          }));
+
+          await supabase
+            .from('working_hours')
+            .insert(workingHoursData);
+        }
+
+        localStorage.removeItem('tempBusinessData');
+        
+        toast({
+          title: "Business Setup Complete!",
+          description: "Welcome to X-SevenAI! Your business profile has been created.",
+        });
+        
+        navigate('/dashboard');
+      }
+    } catch (error) {
+      console.error('Error creating business profile:', error);
+      localStorage.removeItem('tempBusinessData');
+      toast({
+        title: "Setup Error",
+        description: "Failed to create business profile. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
   const businessTypes = [
     { value: "Restaurant", label: "Restaurant" },
     { value: "Cafe", label: "Cafe" },
@@ -494,8 +557,18 @@ const Auth = () => {
         title: "Account Created!",
         description: authData.session ? 
           "Welcome to X-SevenAI! Setting up your business profile..." :
-          "Please check your email to verify your account.",
+          "Account created! Setting up your business profile...",
       });
+
+      // Handle both confirmed and unconfirmed email scenarios
+      if (authData.session) {
+        // Email confirmation disabled or auto-confirmed - user is logged in
+        await handleAuthSuccess(authData.user);
+      } else if (authData.user && !authData.user.email_confirmed_at) {
+        // Email confirmation required but we'll create the business profile anyway
+        // and redirect to dashboard - they can verify email later
+        await createBusinessProfile(authData.user);
+      }
 
       // If email confirmation is disabled, user will be automatically signed in
       // and handleAuthSuccess will create the business profile
