@@ -347,7 +347,7 @@ const Auth = () => {
             
             toast({
               title: "Setup Complete!",
-              description: "Welcome to X-SevenAI! Your business and admin profile have been created.",
+              description: "Welcome! Your business and admin profile have been created.",
             });
             
             navigate('/dashboard');
@@ -453,7 +453,7 @@ const Auth = () => {
         
         toast({
           title: "Setup Complete!",
-          description: "Welcome to X-SevenAI! Your business and admin profile have been created.",
+          description: "Welcome! Your business and admin profile have been created.",
         });
         
         navigate('/dashboard');
@@ -623,7 +623,7 @@ const Auth = () => {
       toast({
         title: "Account Created!",
         description: authData.session ? 
-          "Welcome to X-SevenAI! Setting up your business profile..." :
+          "Welcome! Setting up your business profile..." :
           "Account created! Setting up your business profile...",
       });
 
@@ -658,25 +658,6 @@ const Auth = () => {
     <div className="w-full relative flex flex-col justify-center items-center p-12 bg-gradient-to-br from-primary/8 to-accent/8">
       <div className="absolute inset-0 bg-gradient-to-br from-background/95 to-surface-dark/90 backdrop-blur-sm"></div>
       <div className="relative z-10 max-w-lg text-center space-y-6">
-        {/* Logo and Brand */}
-        <motion.div
-          initial={{ opacity: 0, scale: 0.8 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.8 }}
-          className="space-y-4"
-        >
-          <div className="flex items-center justify-center gap-3">
-            <img 
-              src="/src/assets/company-logo.svg" 
-              alt="X-SevenAI Logo" 
-              className="w-12 h-12 object-contain"
-            />
-            <h1 className="text-4xl font-bold bg-gradient-to-r from-primary via-accent to-secondary bg-clip-text text-transparent">
-              X-SevenAI
-            </h1>
-          </div>
-        </motion.div>
-
         {/* Neural Brain Animation */}
         <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
@@ -685,6 +666,21 @@ const Auth = () => {
           className="flex justify-center items-center"
         >
           <NeuralBrainAnimation />
+        </motion.div>
+        
+        {/* Welcome Text */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, delay: 0.3 }}
+          className="space-y-4"
+        >
+          <h2 className="text-3xl font-bold text-foreground">
+            Welcome to the Future
+          </h2>
+          <p className="text-muted-foreground text-lg">
+            Transform your restaurant business with AI-powered insights and automation.
+          </p>
         </motion.div>
       </div>
     </div>
@@ -750,7 +746,7 @@ const Auth = () => {
               <div className="space-y-6">
                 <div className="text-center space-y-2">
                   <h2 className="text-2xl font-bold neural-heading">Welcome Back</h2>
-                  <p className="text-muted-foreground">Sign in to your X-SevenAI account</p>
+                  <p className="text-muted-foreground">Sign in to your business account</p>
                 </div>
 
                 <form onSubmit={handleLogin} className="space-y-4">

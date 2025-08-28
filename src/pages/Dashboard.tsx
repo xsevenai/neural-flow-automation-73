@@ -127,6 +127,7 @@ const Dashboard = () => {
   
   // Form states
   const [chatMessage, setChatMessage] = useState('');
+  const [chatMessages, setChatMessages] = useState<Array<{id: string, text: string, sender: 'user' | 'ai', timestamp: Date}>>([]);
   const [newCategoryName, setNewCategoryName] = useState('');
 
   // Authentication and data fetching
@@ -632,6 +633,39 @@ const Dashboard = () => {
         );
 
       case 'chat':
+        const sendMessage = () => {
+          if (chatMessage.trim()) {
+            const userMessage = {
+              id: Date.now().toString(),
+              text: chatMessage.trim(),
+              sender: 'user' as const,
+              timestamp: new Date()
+            };
+            
+            setChatMessages(prev => [...prev, userMessage]);
+            
+            // Simulate AI response
+            setTimeout(() => {
+              const aiResponse = {
+                id: (Date.now() + 1).toString(),
+                text: `I understand you're asking about "${chatMessage.trim()}". As your AI assistant for ${businessProfile.name}, I can help you with menu optimization, business insights, and operational guidance. This feature will be fully functional soon!`,
+                sender: 'ai' as const,
+                timestamp: new Date()
+              };
+              setChatMessages(prev => [...prev, aiResponse]);
+            }, 1000);
+            
+            setChatMessage('');
+          }
+        };
+
+        const handleKeyPress = (e: React.KeyboardEvent) => {
+          if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            sendMessage();
+          }
+        };
+
         return (
           <div className="space-y-6 h-full overflow-y-auto">
             <div>
@@ -641,13 +675,25 @@ const Dashboard = () => {
 
             <Card className="border border-muted/20 bg-muted/5 flex-1">
               <CardContent className="p-0 h-full flex flex-col">
-                <div className="flex-1 p-6 min-h-[400px] max-h-[500px] overflow-y-auto">
+                <div className="flex-1 p-4 min-h-[400px] max-h-[500px] overflow-y-auto">
                   <div className="space-y-4">
                     <div className="flex justify-start">
                       <div className="max-w-[80%] p-3 rounded-lg bg-muted text-muted-foreground">
-                        Hello! I'm your AI assistant. I can help you with menu optimization, business analytics, customer service guidance, and operational improvements for {businessProfile.name}.
+                        Hello! I'm your AI assistant for {businessProfile.name}. I can help you with menu optimization, business analytics, customer service guidance, and operational improvements.
                       </div>
                     </div>
+                    
+                    {chatMessages.map((message) => (
+                      <div key={message.id} className={`flex ${message.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
+                        <div className={`max-w-[80%] p-3 rounded-lg ${
+                          message.sender === 'user' 
+                            ? 'bg-primary text-primary-foreground ml-12' 
+                            : 'bg-muted text-muted-foreground mr-12'
+                        }`}>
+                          {message.text}
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 </div>
                 <div className="p-4 border-t border-muted/20">
@@ -656,21 +702,13 @@ const Dashboard = () => {
                       placeholder="Ask me anything about your restaurant business..."
                       value={chatMessage}
                       onChange={(e) => setChatMessage(e.target.value)}
+                      onKeyPress={handleKeyPress}
                       className="border-muted/30 bg-background/50 resize-none"
                       rows={1}
                     />
                     <Button 
                       className="bg-primary hover:bg-primary/90 text-primary-foreground"
-                      onClick={() => {
-                        if (chatMessage.trim()) {
-                          // TODO: Implement chat functionality
-                          toast({
-                            title: "Chat Feature",
-                            description: "AI chat functionality will be implemented soon",
-                          });
-                          setChatMessage('');
-                        }
-                      }}
+                      onClick={sendMessage}
                     >
                       Send
                     </Button>
