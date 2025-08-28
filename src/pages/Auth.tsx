@@ -486,9 +486,6 @@ const Auth = () => {
         throw authError;
       }
 
-      // Clear stored data after successful auth
-      localStorage.removeItem('tempBusinessData');
-
       toast({
         title: "Account Created!",
         description: authData.session ? 
@@ -498,6 +495,7 @@ const Auth = () => {
 
       // If email confirmation is disabled, user will be automatically signed in
       // and handleAuthSuccess will create the business profile
+      // Note: We keep tempBusinessData in localStorage until handleAuthSuccess processes it
       
     } catch (error: any) {
       console.error('Signup error:', error);
